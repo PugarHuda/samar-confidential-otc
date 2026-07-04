@@ -7,9 +7,24 @@ const fredoka = Fredoka({ subsets: ["latin"], weight: ["500", "600", "700"], var
 const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600", "700", "800"], variable: "--font-nunito" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-jetbrains" });
 
+const DESCRIPTION = "Trade big. Nobody peeks. On-chain OTC where order size & price stay encrypted end to end, on Zama fhEVM.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://samar-otc.vercel.app"),
   title: "Samar — Confidential OTC Desk",
-  description: "Trade big. Nobody peeks. On-chain OTC with end-to-end encryption on Zama fhEVM.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "Samar — Confidential OTC Desk",
+    description: DESCRIPTION,
+    url: "https://samar-otc.vercel.app",
+    siteName: "Samar",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Samar — Confidential OTC Desk",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

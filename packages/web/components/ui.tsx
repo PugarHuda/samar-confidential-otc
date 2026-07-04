@@ -3,7 +3,7 @@ import { STATUS, MODE, type TokenMeta } from "@/lib/config";
 
 export function MsIcon({ name, size = 18, className = "" }: { name: string; size?: number; className?: string }) {
   return (
-    <span className={`ms ${className}`} style={{ fontSize: size }}>
+    <span className={`ms ${className}`} style={{ fontSize: size }} aria-hidden="true">
       {name}
     </span>
   );
