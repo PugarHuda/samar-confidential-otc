@@ -1,6 +1,7 @@
 import { sepolia } from "wagmi/chains";
 
 export const CHAIN = sepolia;
+export const SEPOLIA_CHAIN_ID = 11155111;
 const ZERO = "0x0000000000000000000000000000000000000000" as const;
 
 export const ADDRESSES = {

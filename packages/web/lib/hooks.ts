@@ -133,20 +133,22 @@ export function useSamar() {
 
   async function loadIntents(): Promise<IntentRow[]> {
     const n = Number(await pub!.readContract({ address: otc, abi: otcAbi, functionName: "nextId" }));
-    const rows: IntentRow[] = [];
-    for (let i = 0; i < n; i++) {
-      const r: any = await pub!.readContract({ address: otc, abi: otcAbi, functionName: "getIntent", args: [BigInt(i)] });
-      rows.push({
-        id: i,
-        maker: r.maker,
-        sellToken: r.sellToken,
-        buyToken: r.buyToken,
-        mode: Number(r.mode),
-        status: Number(r.status),
-        expiresAt: Number(r.expiresAt),
-        allowedTaker: r.allowedTaker,
-      });
-    }
+    const rows = await Promise.all(
+      Array.from({ length: n }, (_, i) =>
+        pub!
+          .readContract({ address: otc, abi: otcAbi, functionName: "getIntent", args: [BigInt(i)] })
+          .then((r: any) => ({
+            id: i,
+            maker: r.maker,
+            sellToken: r.sellToken,
+            buyToken: r.buyToken,
+            mode: Number(r.mode),
+            status: Number(r.status),
+            expiresAt: Number(r.expiresAt),
+            allowedTaker: r.allowedTaker,
+          })),
+      ),
+    );
     return rows.reverse();
   }
 

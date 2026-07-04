@@ -10,7 +10,9 @@ const config = getDefaultConfig({
   appName: "Samar",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || "SAMAR_DEMO_PROJECT_ID",
   chains: [sepolia],
-  transports: { [sepolia.id]: http() },
+  transports: {
+    [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC || "https://ethereum-sepolia-rpc.publicnode.com"),
+  },
   ssr: true,
 });
 

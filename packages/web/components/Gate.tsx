@@ -1,13 +1,15 @@
 "use client";
 
-import { useAccount } from "wagmi";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { isConfigured } from "@/lib/config";
-import { MsIcon, Panel } from "./ui";
+import { isConfigured, SEPOLIA_CHAIN_ID } from "@/lib/config";
+import { MsIcon, Panel, Button } from "./ui";
 
-/** Wraps app pages: shows a config warning if addresses are unset, and a connect prompt if disconnected. */
+/** Wraps app pages: config warning if unset, connect prompt if disconnected, network prompt if wrong chain. */
 export function Gate({ children, requireConnect = true }: { children: React.ReactNode; requireConnect?: boolean }) {
   const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
 
   if (!isConfigured) {
     return (
@@ -31,6 +33,21 @@ export function Gate({ children, requireConnect = true }: { children: React.Reac
           <p className="mt-1 text-sm text-muted">Sepolia testnet · needed to mint, create and settle.</p>
         </div>
         <ConnectButton />
+      </Panel>
+    );
+  }
+
+  if (isConnected && chainId !== SEPOLIA_CHAIN_ID) {
+    return (
+      <Panel className="flex flex-col items-center gap-4 py-12 text-center">
+        <MsIcon name="lan" size={32} className="text-coral" />
+        <div>
+          <p className="font-display text-lg font-600">Wrong network</p>
+          <p className="mt-1 text-sm text-muted">Samar runs on Sepolia. Switch to continue.</p>
+        </div>
+        <Button variant="primary" onClick={() => switchChain({ chainId: SEPOLIA_CHAIN_ID })}>
+          Switch to Sepolia
+        </Button>
       </Panel>
     );
   }
