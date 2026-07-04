@@ -65,6 +65,8 @@ Built with the tools you already know:
 • Next.js + wagmi + Relayer SDK
 • Sepolia
 
+Permissioned by design: lock a trade to a KYC'd counterparty — compliance lives in the contract. Built for RWA & institutional flow.
+
 Contracts tested with real balance assertions — the swap provably moves funds.
 
 ---

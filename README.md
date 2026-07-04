@@ -2,6 +2,8 @@
 
 > **Samar** (Indonesian: *obscured / unreadable*) is an on-chain OTC desk where **order size, price, and the maker's hidden reserve stay encrypted end-to-end** — from intent creation through atomic settlement. The chain verifies the deal; nobody — not counterparties, not bots, not validators — can read the numbers.
 
+**Positioning:** a confidential **dark pool / OTC desk for tokenized RWA and institutional flow** — exactly where leaking order size and price is unacceptable. Permissioned trades are first-class: an intent can be **locked to a single KYC'd counterparty** (`allowedTaker`), so who-may-trade rules live *in the contract* — matching Zama's programmable-compliance model.
+
 Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. Deploys to **Sepolia**.
 
 **🔗 Live demo:** https://samar-otc.vercel.app  ·  **Code:** https://github.com/PugarHuda/samar-confidential-otc
@@ -16,7 +18,7 @@ Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. D
 
 Live FHE smoke test (mint): [`0xde6fa243…447793`](https://sepolia.etherscan.io/tx/0xde6fa243e20530edfdb4e65203d85c7f39d7d814fbe765afc34cee05f2447793)
 
-**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor.
+**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor. See live settlement activity on [PrivateOTC · Sepolia Etherscan](https://sepolia.etherscan.io/address/0xDEF4DA7B57995eC13F4d02Fd3E81257Dc2d02124).
 
 ---
 
@@ -36,7 +38,7 @@ Prior confidential-OTC attempts on Zama stop at "post an encrypted request." The
 | **Hidden reserve** (`minBuyAmount`) | ✅ maker's floor price stays encrypted; taker offers blind |
 | **Strategy B** (privacy on rejection) | ✅ never reverts on a secret; a too-low offer is a no-op refund, status always `Filled` |
 | **Counterparty-scoped view** | ✅ `grantView` lets one chosen taker decrypt terms before committing |
-| **Locked / open intents** | ✅ `allowedTaker` restricts a fill to one address |
+| **Compliance-gated / permissioned** | ✅ `allowedTaker` locks a fill to one KYC'd address — who-may-trade rules in the contract |
 | Trusted gateway | ❌ none — settlement is pure on-chain FHE |
 
 ### How settlement stays fair without revealing anything
