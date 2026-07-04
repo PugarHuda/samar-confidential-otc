@@ -4,9 +4,15 @@ Confidential token distribution on the **TokenOps SDK** — totals and per-recip
 
 For the **Zama Developer Program — Special Bounty (TokenOps)**.
 
-## Status
+## Status: working, verified live
 
-Feasibility confirmed and full API extracted; deps installed. The two-role admin/recipient UI is the remaining build. See **`../../submission/tokenops-plan.md`** for the exact SDK flow (`createAndFundConfidentialAirdrop` → `encryptUint64` + `signClaimAuthorization` → `claim`), Sepolia factory resolution, and the recommended node smoke-test to verify the flow live before shipping the frontend.
+The full flow — admin `createAndFundConfidentialAirdrop` → `encryptUint64` + `signClaimAuthorization` → recipient `claim` — is **proven live on Sepolia** by `scripts/smoke.mjs` (real claim tx). The admin + recipient UI is live at https://samar-airdrop.vercel.app.
+
+Key detail: `@tokenops/sdk@1.1.1` expects the encryptor to return `{ handles: Uint8Array[], inputProof }`, but `@zama-fhe/sdk@3.2` returns `{ encryptedValues: Hex[], inputProof: Hex }`. A thin adapter in `lib/tokenops.ts` bridges the two. See `../../submission/tokenops-plan.md` for the full recipe.
+
+```bash
+PRIVATE_KEY=0x... node scripts/smoke.mjs   # end-to-end proof on Sepolia
+```
 
 ## Stack
 
