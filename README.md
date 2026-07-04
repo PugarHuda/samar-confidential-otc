@@ -8,6 +8,16 @@ Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. D
 
 **🔗 Live demo:** https://samar-otc.vercel.app  ·  **Code:** https://github.com/PugarHuda/samar-confidential-otc
 
+## This repo ships three confidential-finance apps on Zama
+
+| App | What it is | Track | Live |
+|---|---|---|---|
+| **Samar** — `packages/web` | Confidential OTC desk (Direct + RFQ Vickrey) — documented below | Builder ($7k) | https://samar-otc.vercel.app |
+| **Wrapper Registry** — `packages/wrapper` | Every ERC-20 ↔ ERC-7984 wrapper on Sepolia — wrap/unwrap/decrypt/faucet | Bounty ($3k) | https://samar-wrapper.vercel.app |
+| **Confidential Airdrop** — `packages/airdrop` | Encrypted token distribution on the TokenOps SDK | Special Bounty ($2.5k) | in progress · [plan](submission/tokenops-plan.md) |
+
+The rest of this README documents **Samar** (the OTC desk).
+
 ## Live on Sepolia
 
 | Contract | Address |
