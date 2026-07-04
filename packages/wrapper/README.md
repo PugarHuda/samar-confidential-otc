@@ -1,0 +1,34 @@
+# Confidential Wrapper Registry
+
+A production-ready app that surfaces **every ERC-20 ↔ ERC-7984 wrapper pair** on Sepolia, lets you **wrap / unwrap**, **decrypt any ERC-7984 balance**, and includes a **faucet** for the official cToken mocks.
+
+Built for the **Zama Developer Program — Bounty Track (Mainnet Season 3)**.
+
+**🔗 Live:** https://samar-wrapper.vercel.app
+
+## What it does
+
+- **Reads the official registry** (`0x2f0750Bbb0A246059d80e94c454586a7F27a128e` on Sepolia) via `getTokenConfidentialTokenPairs()` and lists every valid pair (9 live at time of writing).
+- **Faucet** — mints the underlying public ERC-20 mock (`mint(to, amount)`, capped at 1M).
+- **Wrap** — `approve` the wrapper, then `wrap(to, amount)` to mint a confidential ERC-7984 balance.
+- **Decrypt** — user-side decrypt of your `confidentialBalanceOf` via the Zama Relayer SDK (only you can read it).
+- **Unwrap** — encrypts the amount and calls `unwrap(from, to, encryptedAmount, proof)`; the Zama Gateway finalizes and returns the ERC-20.
+
+No custom contracts — the app talks directly to the official Zama registry, wrappers, and cToken mocks already deployed on Sepolia.
+
+## Stack
+
+Next.js (App Router) · wagmi v2 / viem v2 / RainbowKit · Tailwind · `@zama-fhe/relayer-sdk` (encrypt + user-decrypt) · Sepolia.
+
+## Run
+
+```bash
+npm install
+cp .env.example .env.local   # optional: NEXT_PUBLIC_WALLETCONNECT_ID (MetaMask works without)
+npm run dev                  # http://localhost:3000
+```
+
+## Notes
+
+- Wrap amount is entered in whole tokens (scaled by the ERC-20's decimals). Unwrap takes a raw confidential amount (decrypt first to see it). Confidential mocks cap at 6 decimals.
+- Unwrap is asynchronous: `unwrap(...)` requests off-chain decryption; the Gateway calls `finalizeUnwrap` and the ERC-20 arrives shortly after.
