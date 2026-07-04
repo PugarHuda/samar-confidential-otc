@@ -4,6 +4,8 @@
 
 Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. Deploys to **Sepolia**.
 
+**🔗 Live demo:** https://samar-otc.vercel.app  ·  **Code:** https://github.com/PugarHuda/samar-confidential-otc
+
 ## Live on Sepolia
 
 | Contract | Address |

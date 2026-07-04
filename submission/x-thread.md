@@ -72,8 +72,8 @@ Contracts tested with real balance assertions — the swap provably moves funds.
 **8/**
 Try it — mint test tokens, post an encrypted intent, settle a private trade:
 
-🔗 Demo: [demo link]
-💻 Code: [repo link]
+🔗 Demo: https://samar-otc.vercel.app
+💻 Code: https://github.com/PugarHuda/samar-confidential-otc
 🎥 2-min walkthrough: [video link]
 
 Built for the @zama_fhe Developer Program. Trade big. Nobody peeks.
