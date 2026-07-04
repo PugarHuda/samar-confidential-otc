@@ -31,4 +31,4 @@ npm run dev                  # http://localhost:3000
 ## Notes
 
 - Wrap amount is entered in whole tokens (scaled by the ERC-20's decimals). Unwrap takes a raw confidential amount (decrypt first to see it). Confidential mocks cap at 6 decimals.
-- Unwrap is asynchronous: `unwrap(...)` requests off-chain decryption; the Gateway calls `finalizeUnwrap` and the ERC-20 arrives shortly after.
+- Unwrap is a **two-step async flow**: `unwrap(...)` reduces your confidential balance and emits an unwrap request; the public ERC-20 returns only after `finalizeUnwrap(requestId, cleartext, decryptionProof)` runs (the amount must be publicly decrypted first). Verified on Sepolia that the request does not auto-finalize within ~2 min — a production build should surface the pending state and drive `finalizeUnwrap` (parse the request id → relayer `publicDecrypt` → submit). The **wrap** half is fully verified live (`../contracts/scripts/e2e-wrap.ts`).

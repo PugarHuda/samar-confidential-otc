@@ -121,7 +121,10 @@ export default function Home() {
           say(`✓ Unwrapped — received ${(now - pre).toString()} ${meta[p.cToken]?.underSymbol} units back.`);
           break;
         }
-        if (i === 11) say("Still finalizing on the Gateway — refresh in a moment; the ERC-20 will arrive.");
+        if (i === 11)
+          say(
+            "Unwrap submitted — your confidential balance is reduced. Returning the ERC-20 is a separate finalization step (public-decrypt of the amount), so it's not instant; it lands once finalizeUnwrap runs.",
+          );
       }
       loadPairs();
     })();
@@ -223,7 +226,8 @@ export default function Home() {
         </div>
         <p className="mt-4 font-mono text-[10px] text-faint">
           Wrap amount is in whole tokens (scaled by the ERC-20&apos;s decimals). Unwrap takes a raw confidential amount (decrypt to
-          see it). Unwrap is async — the Gateway finalizes and returns the ERC-20.
+          see it). Unwrap is a two-step async flow: the request reduces your confidential balance immediately; the public ERC-20
+          returns after a separate finalization (a public-decrypt of the amount), so it is not instant.
         </p>
       </main>
     </div>
