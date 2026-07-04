@@ -1,0 +1,24 @@
+# deps
+node_modules/
+
+# secrets & local env — NEVER commit (contracts/.env holds the deployer private key)
+.env
+.env.*
+!.env.example
+
+# builds / artifacts
+.next/
+out/
+dist/
+build/
+artifacts/
+cache/
+types/
+fhevmTemp/
+coverage/
+coverage.json
+
+# misc
+*.log
+.DS_Store
+.vercel
