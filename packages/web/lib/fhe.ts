@@ -46,8 +46,8 @@ export async function userDecrypt(
 ): Promise<bigint> {
   const inst = await getInstance();
   const { publicKey, privateKey } = inst.generateKeypair();
-  const start = Math.floor(Date.now() / 1000).toString();
-  const days = "10";
+  const start = Math.floor(Date.now() / 1000); // seconds — SDK requires a number, not a string
+  const days = 10;
   const contracts = [contractAddress];
 
   const eip712 = inst.createEIP712(publicKey, contracts, start, days);
