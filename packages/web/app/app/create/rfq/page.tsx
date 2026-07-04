@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { TOKENS } from "@/lib/config";
+import { TOKENS, validAmount } from "@/lib/config";
 import { useSamar } from "@/lib/hooks";
 import { Gate } from "@/components/Gate";
 import { Panel, Label, Button, Segmented, MsIcon } from "@/components/ui";
@@ -28,8 +28,8 @@ export default function RfqForm() {
 
   async function submit() {
     setErr("");
-    if (Number(sellAmt) <= 0) {
-      setErr("amount must be > 0");
+    if (!validAmount(sellAmt)) {
+      setErr("amount must be a whole number between 1 and 1e15");
       return;
     }
     setBusy(true);

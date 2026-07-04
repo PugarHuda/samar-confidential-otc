@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { tokenByAddress, shortAddr, intentId, MODE, zeroAddressIsOpen } from "@/lib/config";
+import { tokenByAddress, shortAddr, intentId, MODE, zeroAddressIsOpen, validAmount } from "@/lib/config";
 import { useSamar, type IntentRow } from "@/lib/hooks";
 import { Gate } from "@/components/Gate";
 import { Panel, Label, Button, MsIcon, StatusPill, ModePill, TokenChip, Cipher } from "@/components/ui";
@@ -167,11 +167,22 @@ export default function IntentDetail() {
                 placeholder="amount you pay"
               />
               <p className="mt-1 font-mono text-[10px] text-faint">Settles only if it clears the hidden reserve (Strategy B).</p>
+              {!terms && (
+                <p className="mt-2 font-mono text-[10px] text-yellow">
+                  ⚠ Decrypt the terms (left) first to confirm the size you&apos;ll receive before paying.
+                </p>
+              )}
               <Button
                 variant="primary"
                 className="mt-4 w-full"
                 disabled={busy === "accept" || !offer}
-                onClick={run("accept", () => s.accept(id, it.buyToken, Number(offer)), "Settled — check your portfolio.")}
+                onClick={() => {
+                  if (!validAmount(offer)) {
+                    setErr("Offer must be a whole number between 1 and 1e15");
+                    return;
+                  }
+                  run("accept", () => s.accept(id, it.buyToken, Number(offer)), "Settled — check your portfolio.")();
+                }}
               >
                 Encrypt offer &amp; settle
               </Button>
@@ -203,7 +214,13 @@ export default function IntentDetail() {
                     variant="yellow"
                     className="mt-4 w-full"
                     disabled={busy === "bid" || !bidAmt}
-                    onClick={run("bid", () => s.submitBid(id, it.buyToken, Number(bidAmt)), "Bid submitted.")}
+                    onClick={() => {
+                      if (!validAmount(bidAmt)) {
+                        setErr("Bid must be a whole number between 1 and 1e15");
+                        return;
+                      }
+                      run("bid", () => s.submitBid(id, it.buyToken, Number(bidAmt)), "Bid submitted.")();
+                    }}
                   >
                     Encrypt &amp; submit bid
                   </Button>

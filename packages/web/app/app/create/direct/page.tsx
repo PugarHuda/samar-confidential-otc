@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { TOKENS } from "@/lib/config";
+import { TOKENS, validAmount } from "@/lib/config";
 import { useSamar } from "@/lib/hooks";
 import { Gate } from "@/components/Gate";
 import { Panel, Label, Button, Segmented, MsIcon } from "@/components/ui";
@@ -30,8 +30,8 @@ export default function DirectForm() {
 
   async function submit() {
     setErr("");
-    if (Number(sellAmt) <= 0 || Number(minBuy) <= 0) {
-      setErr("amounts must be > 0");
+    if (!validAmount(sellAmt) || !validAmount(minBuy)) {
+      setErr("amounts must be whole numbers between 1 and 1e15");
       return;
     }
     if (taker && taker.length !== 42) {
