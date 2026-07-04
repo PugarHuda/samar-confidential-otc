@@ -110,9 +110,19 @@ export default function Home() {
       if (BigInt(raw) === 0n) throw new Error("enter a confidential amount (raw units) to unwrap");
       say("Encrypting unwrap amount…");
       const { handles, proof } = await encryptValues(p.cToken, address!, [BigInt(raw)]);
+      const pre = (await pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "balanceOf", args: [address!] })) as bigint;
       say("Requesting unwrap (Gateway will finalize + return the ERC-20)…");
       await send({ address: p.cToken, abi: wrapperAbi, functionName: "unwrap", args: [address!, address!, handles[0], proof] });
-      say("Unwrap requested. The underlying ERC-20 arrives once the Gateway finalizes.");
+      say("Unwrap requested. Waiting for the Gateway to finalize + return the ERC-20…");
+      for (let i = 0; i < 12; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const now = (await pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "balanceOf", args: [address!] })) as bigint;
+        if (now > pre) {
+          say(`✓ Unwrapped — received ${(now - pre).toString()} ${meta[p.cToken]?.underSymbol} units back.`);
+          break;
+        }
+        if (i === 11) say("Still finalizing on the Gateway — refresh in a moment; the ERC-20 will arrive.");
+      }
       loadPairs();
     })();
 

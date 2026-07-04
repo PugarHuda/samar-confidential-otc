@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAccount, usePublicClient, useWalletClient, useWriteContract } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { MsIcon, Panel, Button, Label } from "@/components/ui";
-import { CUSDC, OPERATOR_UNTIL, tokenAbi, factoryAddress, createCampaign, authorize, claim, type ClaimPayload } from "@/lib/tokenops";
+import { CUSDC, OPERATOR_UNTIL, tokenAbi, factoryAddress, createCampaign, authorize, claim, decryptBalance, type ClaimPayload } from "@/lib/tokenops";
 
 const WINDOWS: [string, number][] = [
   ["1H", 3600],
@@ -26,6 +26,7 @@ export default function Home() {
   const [allocAmt, setAllocAmt] = useState("100");
   const [payload, setPayload] = useState("");
   const [claimInput, setClaimInput] = useState("");
+  const [myBal, setMyBal] = useState<string | null>(null);
   const [busy, setBusy] = useState("");
   const [log, setLog] = useState("");
 
@@ -78,6 +79,12 @@ export default function Home() {
     const hash = await claim(pub, wallet, p);
     await waitTx(hash);
     say(`Claimed. Tokens received (encrypted). tx ${hash.slice(0, 12)}…`);
+  });
+
+  const decrypt = run("decrypt", async () => {
+    const v = await decryptBalance(pub, wallet, address!);
+    setMyBal(v.toString());
+    say(`Your confidential cUSDC balance: ${v} — decrypted locally, only you can read it.`);
   });
 
   return (
@@ -166,16 +173,23 @@ export default function Home() {
 
             <Panel className="border-yellow/20">
               <div className="font-mono text-[12px] text-dim">RECIPIENT · CLAIM</div>
-              <p className="mt-1 text-sm text-muted">Paste a claim payload and receive your confidential allocation.</p>
+              <p className="mt-1 text-sm text-muted">
+                Paste a claim payload and receive your confidential allocation. Needs a little Sepolia ETH for the claim fee.
+              </p>
               <textarea
                 className={`${field} mt-3 h-24 font-mono text-[11px]`}
                 placeholder='{"airdrop":"0x…","handle":"0x…","inputProof":"0x…","signature":"0x…"}'
                 value={claimInput}
                 onChange={(e) => setClaimInput(e.target.value)}
               />
-              <Button className="mt-3" variant="primary" disabled={!!busy || !claimInput} onClick={doClaim}>
-                {busy === "claim" ? "Claiming…" : "Claim"}
-              </Button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button variant="primary" disabled={!!busy || !claimInput} onClick={doClaim}>
+                  {busy === "claim" ? "Claiming…" : "Claim"}
+                </Button>
+                <Button variant="ghost" disabled={!!busy} onClick={decrypt}>
+                  {busy === "decrypt" ? "Decrypting…" : myBal !== null ? `Balance: ${myBal} cUSDC` : "Decrypt my balance"}
+                </Button>
+              </div>
             </Panel>
 
             <div>

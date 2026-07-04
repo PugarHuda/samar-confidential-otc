@@ -6,7 +6,7 @@ import { createConfig } from "@zama-fhe/sdk/viem";
 import { web } from "@zama-fhe/sdk/web";
 import { sepolia } from "@zama-fhe/sdk/chains";
 import { ZamaSDK } from "@zama-fhe/sdk";
-import { hexToBytes, parseAbi, type Hex } from "viem";
+import { hexToBytes, parseAbi, zeroHash, type Hex } from "viem";
 import {
   createConfidentialAirdropFactoryClient,
   createConfidentialAirdropClient,
@@ -85,4 +85,31 @@ export async function claim(publicClient: any, walletClient: any, p: ClaimPayloa
   const drop = createConfidentialAirdropClient({ publicClient, walletClient, address: p.airdrop });
   const fee = await drop.gasFee();
   return drop.claim({ encryptedInput: { handle: p.handle, inputProof: p.inputProof }, signature: p.signature, value: fee });
+}
+
+/** Anyone: user-decrypt your own confidential cUSDC balance (only you can read it). */
+export async function decryptBalance(publicClient: any, walletClient: any, account: `0x${string}`): Promise<bigint> {
+  encryptor(publicClient, walletClient); // ensures _sdk is built
+  const handle = (await publicClient.readContract({ address: CUSDC, abi: tokenAbi, functionName: "confidentialBalanceOf", args: [account] })) as Hex;
+  if (handle === zeroHash) return 0n;
+  const { publicKey, privateKey } = await _sdk.relayer.generateTransportKeyPair();
+  const start = Math.floor(Date.now() / 1000);
+  const days = 10;
+  const eip = await _sdk.relayer.createEIP712(publicKey, [CUSDC], start, days);
+  const types = { ...eip.types };
+  delete (types as any).EIP712Domain;
+  const primaryType = eip.primaryType ?? Object.keys(types)[0];
+  const signature = await walletClient.signTypedData({ account, domain: eip.domain, types, primaryType, message: eip.message });
+  const res = await _sdk.relayer.userDecrypt({
+    encryptedValues: [handle],
+    contractAddress: CUSDC,
+    signedContractAddresses: [CUSDC],
+    privateKey,
+    publicKey,
+    signature,
+    signerAddress: account,
+    startTimestamp: start,
+    durationDays: days,
+  });
+  return BigInt(res[handle]);
 }

@@ -93,8 +93,34 @@ async function main() {
 
   const bal = await publicClient.readContract({ address: CUSDC, abi: tokenAbi, functionName: "confidentialBalanceOf", args: [recipient.address] });
   const ok = bal !== zeroHash;
-  log("\n" + (ok ? "✅ TokenOps airdrop flow works live on Sepolia — recipient received a confidential balance" : "❌ recipient balance handle empty"));
-  if (!ok) process.exit(1);
+  log("    balance handle:", bal);
+
+  log("\n[6] recipient user-decrypts their confidential balance…");
+  const { publicKey, privateKey } = await sdk.relayer.generateTransportKeyPair();
+  const start2 = Math.floor(Date.now() / 1000);
+  const days2 = 10;
+  const eip = await sdk.relayer.createEIP712(publicKey, [CUSDC], start2, days2);
+  const types = { ...eip.types };
+  delete types.EIP712Domain;
+  const primaryType = eip.primaryType ?? Object.keys(types)[0];
+  const sig = await recipientWallet.signTypedData({ account: recipient, domain: eip.domain, types, primaryType, message: eip.message });
+  const res = await sdk.relayer.userDecrypt({
+    encryptedValues: [bal],
+    contractAddress: CUSDC,
+    signedContractAddresses: [CUSDC],
+    privateKey,
+    publicKey,
+    signature: sig,
+    signerAddress: recipient.address,
+    startTimestamp: start2,
+    durationDays: days2,
+  });
+  const clear = res[bal]?.toString();
+  log("    decrypted balance:", clear);
+
+  const good = ok && clear === "1000";
+  log("\n" + (good ? "✅ TokenOps airdrop works live — claimed AND decrypted the exact allocation (1000)" : "❌ mismatch: ok=" + ok + " clear=" + clear));
+  if (!good) process.exit(1);
 }
 
 main().catch((e) => {

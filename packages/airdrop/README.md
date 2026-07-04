@@ -20,6 +20,8 @@ PRIVATE_KEY=0x... node scripts/smoke.mjs   # end-to-end proof on Sepolia
 
 ## Run
 
+Requires **Node ≥ 22** (inherited from `@zama-fhe/sdk`). Recipients need a little Sepolia ETH to cover the claim's `gasFee`.
+
 ```bash
 npm install
 npm run dev
