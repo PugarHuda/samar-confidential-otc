@@ -16,6 +16,8 @@ Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. D
 
 Live FHE smoke test (mint): [`0xde6fa243…447793`](https://sepolia.etherscan.io/tx/0xde6fa243e20530edfdb4e65203d85c7f39d7d814fbe765afc34cee05f2447793)
 
+**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor.
+
 ---
 
 ## Why this exists
