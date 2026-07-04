@@ -46,6 +46,29 @@ await drop.claim({ encryptedInput, signature, value: fee });  // receives confid
 - **Admin panel:** pick an ERC-7984 token → set window → create+fund → paste recipient addresses + amounts → generate claim links (`{airdrop, encryptedInput, signature}` encoded in a URL).
 - **Recipient panel:** open a claim link → connect → `claim()` → decrypt & show the amount received.
 
+## The `@zama-fhe/sdk@3` encryptor (mapped from the installed SDK)
+
+The TokenOps `encryptor` is any object with `.encrypt({ values, contractAddress, userAddress })`. In v3 you get one from a `ZamaSDK`:
+
+```ts
+// node (smoke-test / server)
+import { createConfig } from "@zama-fhe/sdk/viem";
+import { node, sepolia } from "@zama-fhe/sdk/node";   // sepolia here is the FheChain, NOT viem's
+import { ZamaSDK } from "@zama-fhe/sdk";
+import { resolveEncryptor } from "@tokenops/sdk/fhe-airdrop";
+
+const config = createConfig({ chains: [sepolia], publicClient, walletClient, relayers: { [sepolia.id]: node() } });
+const sdk = new ZamaSDK(config);
+const encryptor = resolveEncryptor(() => sdk.relayer);   // sdk.relayer is a RelayerDispatcher
+
+// browser: wrap the app in @zama-fhe/react-sdk's ZamaSDKProvider and use
+// resolveEncryptor(() => useZamaSDK().relayer) with relayers: { [sepolia.id]: web() }
+```
+
+The headline `createConfig` needs **no API key** for Sepolia (public relayer). `relayerUrl` is only for production proxying.
+
+**Runtime unknowns to validate first (why the node smoke-test matters):** RelayerNode runs FHE in a **worker-thread WASM pool** (`node()` factory) — confirm it initializes in a plain script; confirm `sdk.relayer` (a `RelayerDispatcher`) exposes the `.encrypt({values, contractAddress, userAddress})` shape TokenOps expects; Node ≥ 22. These are the parts most likely to need a debugging pass — do them in the smoke-test, not in the UI.
+
 ## De-risk before UI (recommended)
 Write a node smoke-test (mirroring `packages/contracts/scripts/e2e-settle.ts`): admin creates+funds an airdrop with our deployed `SamarCToken`, issues an auth for a generated recipient wallet, recipient claims, decrypt asserts the amount. Uses `RelayerNode` from `@zama-fhe/sdk/node` as the encryptor. Proves the whole flow live on Sepolia before building the frontend.
 
