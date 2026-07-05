@@ -172,7 +172,7 @@ export default function Home() {
                       public: {m ? Number(formatUnits(m.underBal, m.dec)).toLocaleString() : "—"} {m?.underSymbol}
                     </div>
                     <div className="flex items-center justify-end gap-1.5 text-muted">
-                      confidential: {m?.cBal !== undefined ? <span className="text-txt">{m.cBal}</span> : <Cipher />}
+                      confidential: {m?.cBal !== undefined ? <span className="text-txt">{Number(formatUnits(BigInt(m.cBal), m.cDec)).toLocaleString()}</span> : <Cipher />}
                     </div>
                   </div>
                 </div>
