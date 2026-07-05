@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount, usePublicClient, useWalletClient, useWriteContract, useSignTypedData, useChainId, useSwitchChain } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient, useWriteContract, useChainId, useSwitchChain } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { zeroHash, formatUnits, type Hex } from "viem";
+import { formatUnits } from "viem";
 import { REGISTRY, SEPOLIA_CHAIN_ID, OPERATOR_UNTIL, registryAbi, wrapperAbi, erc20Abi, shortAddr, type Pair } from "@/lib/registry";
-import { userDecrypt } from "@/lib/fhe";
-import { unshield } from "@/lib/unshield";
+import { unshield, decryptBalance } from "@/lib/unshield";
 import { MsIcon, Panel, Button, Cipher } from "@/components/ui";
 
 type Meta = { cSymbol: string; underSymbol: string; dec: number; underBal: bigint; cBal?: string };
@@ -18,7 +17,6 @@ export default function Home() {
   const pub = usePublicClient();
   const { data: wallet } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
-  const { signTypedDataAsync } = useSignTypedData();
 
   const [pairs, setPairs] = useState<Pair[]>([]);
   const [meta, setMeta] = useState<Record<string, Meta>>({});
@@ -100,8 +98,7 @@ export default function Home() {
 
   const decrypt = (p: Pair) =>
     run(`dec-${p.cToken}`, async () => {
-      const h = (await pub!.readContract({ address: p.cToken, abi: wrapperAbi, functionName: "confidentialBalanceOf", args: [address!] })) as Hex;
-      const v = h === zeroHash ? 0n : await userDecrypt(h, p.cToken, address!, signTypedDataAsync);
+      const v = await decryptBalance(pub, wallet, p.cToken, address!);
       setMeta((m) => ({ ...m, [p.cToken]: { ...m[p.cToken], cBal: v.toString() } }));
       say(`${meta[p.cToken]?.cSymbol} balance decrypted (only you can read it).`);
     })();
