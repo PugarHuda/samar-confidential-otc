@@ -5,9 +5,9 @@ import { ethers } from "hardhat";
 // the second price. This is the end-to-end confidential-trade proof.
 import { createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/node";
 
-const CUSDC = "0x25fb7981e5D6A6400cBefA1efFcF6E80c8c6aAf7";
-const CETH = "0x4146219c871F1894ebd6E3B6a1Df30Bf05e4d91e";
-const OTC = "0xDEF4DA7B57995eC13F4d02Fd3E81257Dc2d02124";
+const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e";
+const CETH = "0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c";
+const OTC = "0xeC9db6251178EB090f436Fb0667Ace390adA2617";
 const UNTIL = 2_000_000_000;
 const EXPIRES = 2_000_000_000;
 const HEX = (h: any) => (typeof h === "string" ? (h.startsWith("0x") ? h : "0x" + h) : ethers.hexlify(h));

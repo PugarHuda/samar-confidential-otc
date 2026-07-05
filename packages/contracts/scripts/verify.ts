@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 
 // Live Sepolia smoke test: mint a confidential token and confirm the balance handle is set.
 // Proves the FHE coprocessor accepts our contract's ops (asEuint64 + _mint + ACL) on-chain.
-const CUSDC = "0x25fb7981e5D6A6400cBefA1efFcF6E80c8c6aAf7";
+const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e";
 
 async function main() {
   const [signer] = await ethers.getSigners();

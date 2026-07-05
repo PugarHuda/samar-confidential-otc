@@ -15,7 +15,7 @@ import {
 } from "@tokenops/sdk/fhe-airdrop";
 
 // SamarCToken cUSDC (ERC-7984) — the confidential token distributed in the demo.
-export const CUSDC = "0x25fb7981e5D6A6400cBefA1efFcF6E80c8c6aAf7" as const;
+export const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e" as const;
 export const OPERATOR_UNTIL = 2_000_000_000;
 
 export const tokenAbi = parseAbi([

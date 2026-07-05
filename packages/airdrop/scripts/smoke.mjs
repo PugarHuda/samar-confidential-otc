@@ -17,7 +17,7 @@ import {
 } from "@tokenops/sdk/fhe-airdrop";
 
 const RPC = process.env.SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com";
-const CUSDC = "0x25fb7981e5D6A6400cBefA1efFcF6E80c8c6aAf7"; // our deployed SamarCToken (ERC-7984)
+const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e"; // our deployed SamarCToken (ERC-7984)
 const tokenAbi = parseAbi([
   "function mint(uint64 amount)",
   "function setOperator(address operator, uint48 until)",

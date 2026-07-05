@@ -25,9 +25,9 @@ Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/sa
 ## Deployed contracts (Samar, Sepolia)
 | Contract | Address |
 |---|---|
-| PrivateOTC | `0xDEF4DA7B57995eC13F4d02Fd3E81257Dc2d02124` |
-| cUSDC (SamarCToken) | `0x25fb7981e5D6A6400cBefA1efFcF6E80c8c6aAf7` |
-| cETH (SamarCToken) | `0x4146219c871F1894ebd6E3B6a1Df30Bf05e4d91e` |
+| PrivateOTC | `0xeC9db6251178EB090f436Fb0667Ace390adA2617` |
+| cUSDC (SamarCToken) | `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e` |
+| cETH (SamarCToken) | `0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c` |
 
 Wrapper & Airdrop talk to Zama's already-deployed Sepolia contracts (Wrappers Registry `0x2f0750Bbb0A246059d80e94c454586a7F27a128e`; TokenOps airdrop factory resolved by the SDK).
 
