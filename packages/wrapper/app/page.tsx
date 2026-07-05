@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount, usePublicClient, useWriteContract, useSignTypedData, useChainId, useSwitchChain } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient, useWriteContract, useSignTypedData, useChainId, useSwitchChain } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { zeroHash, formatUnits, type Hex } from "viem";
 import { REGISTRY, SEPOLIA_CHAIN_ID, OPERATOR_UNTIL, registryAbi, wrapperAbi, erc20Abi, shortAddr, type Pair } from "@/lib/registry";
-import { encryptValues, userDecrypt } from "@/lib/fhe";
+import { userDecrypt } from "@/lib/fhe";
+import { unshield } from "@/lib/unshield";
 import { MsIcon, Panel, Button, Cipher } from "@/components/ui";
 
 type Meta = { cSymbol: string; underSymbol: string; dec: number; underBal: bigint; cBal?: string };
@@ -15,6 +16,7 @@ export default function Home() {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const pub = usePublicClient();
+  const { data: wallet } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
   const { signTypedDataAsync } = useSignTypedData();
 
@@ -106,26 +108,12 @@ export default function Home() {
 
   const unwrap = (p: Pair) =>
     run(`unwrap-${p.cToken}`, async () => {
-      const raw = amt[p.cToken] || "0";
-      if (BigInt(raw) === 0n) throw new Error("enter a confidential amount (raw units) to unwrap");
-      say("Encrypting unwrap amount…");
-      const { handles, proof } = await encryptValues(p.cToken, address!, [BigInt(raw)]);
-      const pre = (await pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "balanceOf", args: [address!] })) as bigint;
-      say("Requesting unwrap (Gateway will finalize + return the ERC-20)…");
-      await send({ address: p.cToken, abi: wrapperAbi, functionName: "unwrap", args: [address!, address!, handles[0], proof] });
-      say("Unwrap requested. Waiting for the Gateway to finalize + return the ERC-20…");
-      for (let i = 0; i < 12; i++) {
-        await new Promise((r) => setTimeout(r, 3000));
-        const now = (await pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "balanceOf", args: [address!] })) as bigint;
-        if (now > pre) {
-          say(`✓ Unwrapped — received ${(now - pre).toString()} ${meta[p.cToken]?.underSymbol} units back.`);
-          break;
-        }
-        if (i === 11)
-          say(
-            "Unwrap submitted — your confidential balance is reduced. Returning the ERC-20 is a separate finalization step (public-decrypt of the amount), so it's not instant; it lands once finalizeUnwrap runs.",
-          );
-      }
+      const whole = amt[p.cToken] || "0";
+      if (BigInt(whole) === 0n) throw new Error("enter an amount (whole tokens) to unwrap");
+      const amount = units(p, whole);
+      say(`Unwrapping ${whole} ${meta[p.cToken]?.underSymbol} — unshield orchestrates request → public-decrypt → finalize (~20–40s)…`);
+      await unshield(pub, wallet, p.cToken, amount);
+      say(`✓ Unwrapped — ${whole} ${meta[p.cToken]?.underSymbol} returned to your wallet.`);
       loadPairs();
     })();
 
@@ -225,9 +213,9 @@ export default function Home() {
           </div>
         </div>
         <p className="mt-4 font-mono text-[10px] text-faint">
-          Wrap amount is in whole tokens (scaled by the ERC-20&apos;s decimals). Unwrap takes a raw confidential amount (decrypt to
-          see it). Unwrap is a two-step async flow: the request reduces your confidential balance immediately; the public ERC-20
-          returns after a separate finalization (a public-decrypt of the amount), so it is not instant.
+          Amounts are in whole tokens (scaled by the ERC-20&apos;s decimals). Unwrap runs the full two-phase flow via the Zama SDK
+          (`WrappedToken.unshield`): request → public-decrypt → finalize, so the public ERC-20 actually returns to your wallet
+          (~20–40s). Verified live on Sepolia.
         </p>
       </main>
     </div>

@@ -12,7 +12,7 @@ Built for the **Zama Developer Program — Bounty Track (Mainnet Season 3)**.
 - **Faucet** — mints the underlying public ERC-20 mock (`mint(to, amount)`, capped at 1M).
 - **Wrap** — `approve` the wrapper, then `wrap(to, amount)` to mint a confidential ERC-7984 balance.
 - **Decrypt** — user-side decrypt of your `confidentialBalanceOf` via the Zama Relayer SDK (only you can read it).
-- **Unwrap** — encrypts the amount and calls `unwrap(from, to, encryptedAmount, proof)`; the Zama Gateway finalizes and returns the ERC-20.
+- **Unwrap** — via `@zama-fhe/sdk` v3 `WrappedToken.unshield`, which orchestrates the full two-phase flow (unwrap request → wait → public-decrypt → `finalizeUnwrap`) so the public ERC-20 actually returns to your wallet.
 
 No custom contracts — the app talks directly to the official Zama registry, wrappers, and cToken mocks already deployed on Sepolia.
 
@@ -31,4 +31,4 @@ npm run dev                  # http://localhost:3000
 ## Notes
 
 - Wrap amount is entered in whole tokens (scaled by the ERC-20's decimals). Unwrap takes a raw confidential amount (decrypt first to see it). Confidential mocks cap at 6 decimals.
-- Unwrap is a **two-step async flow**: `unwrap(...)` reduces your confidential balance and emits an unwrap request; the public ERC-20 returns only after `finalizeUnwrap(requestId, cleartext, decryptionProof)` runs (the amount must be publicly decrypted first). Verified on Sepolia that the request does not auto-finalize within ~2 min — a production build should surface the pending state and drive `finalizeUnwrap` (parse the request id → relayer `publicDecrypt` → submit). The **wrap** half is fully verified live (`../contracts/scripts/e2e-wrap.ts`).
+- Both halves are **verified live on Sepolia**: wrap (`../contracts/scripts/e2e-wrap.ts`) and the full unwrap→finalize round-trip (`../airdrop/scripts/smoke-unshield.mjs` — got the ERC-20 back). The raw `unwrap(...)` call is only a request that does not auto-finalize; the app uses `WrappedToken.unshield`, which drives the finalization for you.
