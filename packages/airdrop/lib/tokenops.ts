@@ -28,14 +28,21 @@ export const tokenAbi = parseAbi([
 export type ClaimPayload = { airdrop: `0x${string}`; handle: Hex; inputProof: Hex; signature: Hex };
 
 let _sdk: any = null;
-function encryptor(publicClient: any, walletClient: any) {
-  if (!_sdk) {
-    const config = createConfig({ chains: [sepolia], publicClient, walletClient, relayers: { [sepolia.id]: web() } });
-    _sdk = new ZamaSDK(config);
+let _sdkKey: string | null = null;
+function getSdk(publicClient: any, walletClient: any) {
+  const key = walletClient?.account?.address ?? null;
+  if (!key) throw new Error("Connect your wallet first.");
+  if (!_sdk || _sdkKey !== key) {
+    _sdk = new ZamaSDK(createConfig({ chains: [sepolia], publicClient, walletClient, relayers: { [sepolia.id]: web() } }));
+    _sdkKey = key;
   }
+  return _sdk;
+}
+function encryptor(publicClient: any, walletClient: any) {
+  const sdk = getSdk(publicClient, walletClient);
   return {
     async encrypt(params: any) {
-      const r = await _sdk.relayer.encrypt(params);
+      const r = await sdk.relayer.encrypt(params);
       return { handles: r.encryptedValues.map((h: Hex) => hexToBytes(h)), inputProof: hexToBytes(r.inputProof) };
     },
   };
@@ -89,18 +96,18 @@ export async function claim(publicClient: any, walletClient: any, p: ClaimPayloa
 
 /** Anyone: user-decrypt your own confidential cUSDC balance (only you can read it). */
 export async function decryptBalance(publicClient: any, walletClient: any, account: `0x${string}`): Promise<bigint> {
-  encryptor(publicClient, walletClient); // ensures _sdk is built
+  const sdk = getSdk(publicClient, walletClient);
   const handle = (await publicClient.readContract({ address: CUSDC, abi: tokenAbi, functionName: "confidentialBalanceOf", args: [account] })) as Hex;
   if (handle === zeroHash) return 0n;
-  const { publicKey, privateKey } = await _sdk.relayer.generateTransportKeyPair();
+  const { publicKey, privateKey } = await sdk.relayer.generateTransportKeyPair();
   const start = Math.floor(Date.now() / 1000);
   const days = 10;
-  const eip = await _sdk.relayer.createEIP712(publicKey, [CUSDC], start, days);
+  const eip = await sdk.relayer.createEIP712(publicKey, [CUSDC], start, days);
   const types = { ...eip.types };
   delete (types as any).EIP712Domain;
   const primaryType = eip.primaryType ?? Object.keys(types)[0];
   const signature = await walletClient.signTypedData({ account, domain: eip.domain, types, primaryType, message: eip.message });
-  const res = await _sdk.relayer.userDecrypt({
+  const res = await sdk.relayer.userDecrypt({
     encryptedValues: [handle],
     contractAddress: CUSDC,
     signedContractAddresses: [CUSDC],

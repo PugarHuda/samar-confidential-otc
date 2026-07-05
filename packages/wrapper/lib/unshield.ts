@@ -12,10 +12,13 @@ import { parseAbi, zeroHash, type Hex } from "viem";
 const balAbi = parseAbi(["function confidentialBalanceOf(address account) view returns (bytes32)"]);
 
 let _sdk: any = null;
+let _sdkKey: string | null = null;
 function getSdk(publicClient: any, walletClient: any) {
-  if (!_sdk) {
-    const config = createConfig({ chains: [sepolia], publicClient, walletClient, relayers: { [sepolia.id]: web() } });
-    _sdk = new ZamaSDK(config);
+  const key = walletClient?.account?.address ?? null;
+  if (!key) throw new Error("Connect your wallet first.");
+  if (!_sdk || _sdkKey !== key) {
+    _sdk = new ZamaSDK(createConfig({ chains: [sepolia], publicClient, walletClient, relayers: { [sepolia.id]: web() } }));
+    _sdkKey = key;
   }
   return _sdk;
 }
