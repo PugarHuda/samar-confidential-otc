@@ -5,7 +5,7 @@ import { useAccount, usePublicClient, useWalletClient, useWriteContract, useChai
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { formatUnits } from "viem";
 import { REGISTRY, SEPOLIA_CHAIN_ID, OPERATOR_UNTIL, registryAbi, wrapperAbi, erc20Abi, shortAddr, type Pair } from "@/lib/registry";
-import { unshield, decryptBalance } from "@/lib/unshield";
+import { shield, unshield, decryptBalance } from "@/lib/unshield";
 import { MsIcon, Panel, Button, Cipher } from "@/components/ui";
 
 type Meta = { cSymbol: string; underSymbol: string; dec: number; cDec: number; underBal: bigint; cBal?: string };
@@ -91,10 +91,8 @@ export default function Home() {
     run(`wrap-${p.cToken}`, async () => {
       const a = units(p, amt[p.cToken] || "0");
       if (a === 0n) throw new Error("enter an amount");
-      say(`Approving ${amt[p.cToken]} ${meta[p.cToken]?.underSymbol}…`);
-      await send({ address: p.token, abi: erc20Abi, functionName: "approve", args: [p.cToken, a] });
-      say("Wrapping into confidential…");
-      await send({ address: p.cToken, abi: wrapperAbi, functionName: "wrap", args: [address!, a] });
+      say(`Wrapping ${amt[p.cToken]} ${meta[p.cToken]?.underSymbol} into confidential (handles approval automatically)…`);
+      await shield(pub, wallet, p.cToken, a);
       say(`Wrapped → ${meta[p.cToken]?.cSymbol} (encrypted). Decrypt to view.`);
       loadPairs();
     })();

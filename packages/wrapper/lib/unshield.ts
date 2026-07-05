@@ -23,7 +23,14 @@ function getSdk(publicClient: any, walletClient: any) {
   return _sdk;
 }
 
-/** Unwrap `amount` (base units) of a confidential wrapper back to the public ERC-20, fully finalized. */
+/** Wrap `amount` (underlying base units) of a public ERC-20 into its confidential wrapper.
+ *  Uses the SDK's shield — handles ERC-1363 vs approve+wrap and USDT-style allowance resets. */
+export async function shield(publicClient: any, walletClient: any, cToken: `0x${string}`, amount: bigint) {
+  const wt = new WrappedToken(getSdk(publicClient, walletClient), cToken);
+  return wt.shield(amount);
+}
+
+/** Unwrap `amount` (confidential base units) back to the public ERC-20, fully finalized. */
 export async function unshield(publicClient: any, walletClient: any, cToken: `0x${string}`, amount: bigint) {
   const wt = new WrappedToken(getSdk(publicClient, walletClient), cToken);
   return wt.unshield(amount);
