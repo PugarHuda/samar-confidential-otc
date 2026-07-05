@@ -9,7 +9,7 @@ const DIRECT = 0;
 const RFQ = 1;
 
 describe("PrivateOTC", function () {
-  let maker: Signer, taker: Signer, other: Signer;
+  let maker: Signer, taker: Signer, other: Signer, fourth: Signer;
   let makerAddr: string, takerAddr: string, otherAddr: string;
   let usdc: any, eth: any, otc: any;
   let usdcAddr: string, ethAddr: string, otcAddr: string;
@@ -60,7 +60,7 @@ describe("PrivateOTC", function () {
 
   beforeEach(async function () {
     if (!fhevm.isMock) this.skip();
-    [, maker, taker, other] = await ethers.getSigners();
+    [, maker, taker, other, fourth] = await ethers.getSigners();
     makerAddr = await maker.getAddress();
     takerAddr = await taker.getAddress();
     otherAddr = await other.getAddress();
@@ -159,6 +159,36 @@ describe("PrivateOTC", function () {
       expect(await bal(usdc, usdcAddr, other)).to.equal(8000n);
       // maker: receives the second price, gives up the asset
       expect(await bal(usdc, usdcAddr, maker)).to.equal(8000n);
+      expect(await bal(eth, ethAddr, maker)).to.equal(0n);
+    });
+
+    it("Vickrey with 3 bidders: winner pays the SECOND-highest price, not the third or their own", async () => {
+      await eth.connect(maker).mint(6);
+      await usdc.connect(taker).mint(10000); // highest → winner
+      await usdc.connect(fourth).mint(9000); // second-highest → the clearing price
+      await usdc.connect(other).mint(7000); // third → loser
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(fourth).setOperator(otcAddr, UNTIL);
+      await usdc.connect(other).setOperator(otcAddr, UNTIL);
+
+      await createIntent(6, 0, RFQ);
+      await submitBid(taker, 10000);
+      await submitBid(fourth, 9000);
+      await submitBid(other, 7000);
+      expect(await otc.getBidCount(0)).to.equal(3n);
+
+      await otc.connect(maker).finalizeAuction(0);
+
+      // winner (taker): 6 cETH, pays the 2nd price 9000, refunded 1000 → holds 1000 cUSDC
+      expect(await bal(eth, ethAddr, taker)).to.equal(6n);
+      expect(await bal(usdc, usdcAddr, taker)).to.equal(1000n);
+      // fourth (2nd-highest, loser) + other (loser): fully refunded, no asset
+      expect(await bal(usdc, usdcAddr, fourth)).to.equal(9000n);
+      expect(await bal(eth, ethAddr, fourth)).to.equal(0n);
+      expect(await bal(usdc, usdcAddr, other)).to.equal(7000n);
+      // maker: receives the second price (9000), gives up the asset
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(9000n);
       expect(await bal(eth, ethAddr, maker)).to.equal(0n);
     });
 
