@@ -2,7 +2,7 @@
 
 Three confidential-finance apps on Zama fhEVM, one monorepo, all deployed and **verified live on Sepolia**.
 
-Repo: https://github.com/PugarHuda/samar-confidential-otc
+Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/samar-confidential-otc
 
 | # | App | Track | Live demo | Code | Video script | X thread |
 |---|---|---|---|---|---|---|

@@ -16,7 +16,7 @@ Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. D
 | **Wrapper Registry** — `packages/wrapper` | Every ERC-20 ↔ ERC-7984 wrapper on Sepolia — wrap/unwrap/decrypt/faucet | Bounty ($3k) | https://samar-wrapper.vercel.app |
 | **Confidential Airdrop** — `packages/airdrop` | Encrypted token distribution on the TokenOps SDK — flow verified live | Special Bounty ($2.5k) | https://samar-airdrop.vercel.app |
 
-The rest of this README documents **Samar** (the OTC desk).
+All three are surfaced at the **suite hub → https://samar-hub.vercel.app**. The rest of this README documents **Samar** (the OTC desk).
 
 ## Live on Sepolia
 
