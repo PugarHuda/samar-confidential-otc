@@ -8,7 +8,7 @@ import { REGISTRY, SEPOLIA_CHAIN_ID, OPERATOR_UNTIL, registryAbi, wrapperAbi, er
 import { unshield, decryptBalance } from "@/lib/unshield";
 import { MsIcon, Panel, Button, Cipher } from "@/components/ui";
 
-type Meta = { cSymbol: string; underSymbol: string; dec: number; underBal: bigint; cBal?: string };
+type Meta = { cSymbol: string; underSymbol: string; dec: number; cDec: number; underBal: bigint; cBal?: string };
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -42,13 +42,14 @@ export default function Home() {
       const m: Record<string, Meta> = {};
       await Promise.all(
         list.map(async (p) => {
-          const [cSymbol, underSymbol, dec, underBal] = await Promise.all([
+          const [cSymbol, underSymbol, dec, cDec, underBal] = await Promise.all([
             pub!.readContract({ address: p.cToken, abi: wrapperAbi, functionName: "symbol" }).catch(() => "c???"),
             pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "symbol" }).catch(() => "???"),
             pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "decimals" }).catch(() => 18),
+            pub!.readContract({ address: p.cToken, abi: wrapperAbi, functionName: "decimals" }).catch(() => 6),
             address ? pub!.readContract({ address: p.token, abi: erc20Abi, functionName: "balanceOf", args: [address] }).catch(() => 0n) : Promise.resolve(0n),
           ]);
-          m[p.cToken] = { cSymbol: cSymbol as string, underSymbol: underSymbol as string, dec: Number(dec), underBal: underBal as bigint };
+          m[p.cToken] = { cSymbol: cSymbol as string, underSymbol: underSymbol as string, dec: Number(dec), cDec: Number(cDec), underBal: underBal as bigint };
         }),
       );
       setMeta(m);
@@ -74,7 +75,9 @@ export default function Home() {
     }
   };
 
+  // wrap/faucet use the UNDERLYING decimals; unwrap (unshield) uses the CONFIDENTIAL token's decimals (capped ≤6).
   const units = (p: Pair, whole: string) => BigInt(whole || "0") * 10n ** BigInt(meta[p.cToken]?.dec ?? 18);
+  const cUnits = (p: Pair, whole: string) => BigInt(whole || "0") * 10n ** BigInt(meta[p.cToken]?.cDec ?? 6);
 
   const faucet = (p: Pair) =>
     run(`mint-${p.cToken}`, async () => {
@@ -107,7 +110,7 @@ export default function Home() {
     run(`unwrap-${p.cToken}`, async () => {
       const whole = amt[p.cToken] || "0";
       if (BigInt(whole) === 0n) throw new Error("enter an amount (whole tokens) to unwrap");
-      const amount = units(p, whole);
+      const amount = cUnits(p, whole);
       say(`Unwrapping ${whole} ${meta[p.cToken]?.underSymbol} — unshield orchestrates request → public-decrypt → finalize (~20–40s)…`);
       await unshield(pub, wallet, p.cToken, amount);
       say(`✓ Unwrapped — ${whole} ${meta[p.cToken]?.underSymbol} returned to your wallet.`);
