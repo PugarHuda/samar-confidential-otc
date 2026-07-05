@@ -18,8 +18,9 @@ Repo: https://github.com/PugarHuda/samar-confidential-otc
 ## Verified live on Sepolia (reproducible scripts)
 - Samar settlement (Direct + RFQ Vickrey second-price): `packages/contracts/scripts/e2e-settle.ts`
 - Samar relayer round-trip (encrypt → create → decrypt): `packages/contracts/scripts/e2e.ts`
-- Wrapper (mint → wrap → decrypt): `packages/contracts/scripts/e2e-wrap.ts`
-- Airdrop (create+fund → authorize → claim): `packages/airdrop/scripts/smoke.mjs`
+- Wrapper wrap (mint → wrap → decrypt): `packages/contracts/scripts/e2e-wrap.ts`
+- Wrapper unwrap → finalize (full round-trip, ERC-20 returned): `packages/airdrop/scripts/smoke-unshield.mjs`
+- Airdrop (create+fund → authorize → claim → decrypt): `packages/airdrop/scripts/smoke.mjs`
 
 ## Deployed contracts (Samar, Sepolia)
 | Contract | Address |
