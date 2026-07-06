@@ -19,7 +19,7 @@ Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/sa
 - Samar settlement (Direct + RFQ Vickrey second-price): `packages/contracts/scripts/e2e-settle.ts`
 - Samar relayer round-trip (encrypt → create → decrypt): `packages/contracts/scripts/e2e.ts`
 - Wrapper wrap (mint → wrap → decrypt): `packages/contracts/scripts/e2e-wrap.ts`
-- Wrapper unwrap → finalize (full round-trip, ERC-20 returned): `packages/airdrop/scripts/smoke-unshield.mjs`
+- Wrapper unwrap → finalize (full round-trip, ERC-20 returned): `packages/wrapper/scripts/smoke-unshield.mjs`
 - Airdrop (create+fund → authorize → claim → decrypt): `packages/airdrop/scripts/smoke.mjs`
 
 ## Deployed contracts (Samar, Sepolia)
@@ -32,6 +32,6 @@ Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/sa
 Wrapper & Airdrop talk to Zama's already-deployed Sepolia contracts (Wrappers Registry `0x2f0750Bbb0A246059d80e94c454586a7F27a128e`; TokenOps airdrop factory resolved by the SDK).
 
 ## Per-submission checklist
-For each of the three: [ ] deployed demo · [ ] 3-min real-person video (scripts ready) · [ ] X thread (drafts ready) · [ ] submit repo + demo URL.
+For each of the three: [x] deployed demo (live on Vercel) · [ ] 3-min real-person video (scripts ready) · [ ] X thread (drafts ready) · [ ] submit repo + demo URL.
 
 > Testnet only. Token faucets mint freely by design.

@@ -31,4 +31,4 @@ npm run dev                  # http://localhost:3000
 ## Notes
 
 - Wrap amount is entered in whole tokens (scaled by the ERC-20's decimals). Unwrap takes a raw confidential amount (decrypt first to see it). Confidential mocks cap at 6 decimals.
-- Both halves are **verified live on Sepolia**: wrap (`../contracts/scripts/e2e-wrap.ts`) and the full unwrap→finalize round-trip (`../airdrop/scripts/smoke-unshield.mjs` — got the ERC-20 back). The raw `unwrap(...)` call is only a request that does not auto-finalize; the app uses `WrappedToken.unshield`, which drives the finalization for you.
+- Both halves are **verified live on Sepolia**: wrap (`../contracts/scripts/e2e-wrap.ts`) and the full unwrap→finalize round-trip (`scripts/smoke-unshield.mjs` — got the ERC-20 back). The raw `unwrap(...)` call is only a request that does not auto-finalize; the app uses `WrappedToken.unshield`, which drives the finalization for you.

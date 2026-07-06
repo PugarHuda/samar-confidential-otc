@@ -121,7 +121,7 @@ Demo flow: **Faucet** (mint + authorize both tokens) → **Create Intent → Dir
 ## Status: honest scope
 
 - ✅ **Live now** — **Direct OTC** (encrypted intents, hidden reserve, counterparty-scoped view grants, atomic Strategy-B settlement, cancel) and **RFQ** (sealed-bid **Vickrey** second-price auctions, up to 10 bidders — highest bidder wins and pays the second price **floored at the maker's encrypted reserve**, a single unique winner on a top tie, and a no-sale refund if no bid clears the reserve — all on encrypted handles; `allowedTaker` locks bidding too).
-- 🗺 **Coming soon** — partial fills, compliance-gated fills (allowlist / KYC).
+- 🗺 **Coming soon** — partial fills, and broader compliance gating (multi-address allowlists / KYC-provider hooks; the single-address `allowedTaker` lock is already live).
 
 > Note: RFQ `finalizeAuction` runs FHE ops per bidder; practical for a handful of bidders on Sepolia, `MAX_BIDDERS = 10`.
 
@@ -129,8 +129,8 @@ Demo flow: **Faucet** (mint + authorize both tokens) → **Create Intent → Dir
 
 ## Submission checklist (deadline: July 7, 23:59 AOE)
 
-- [ ] Contracts deployed on Sepolia (addresses in web `.env.local`)
-- [ ] Frontend deployed (Vercel) — set the same `NEXT_PUBLIC_*` env vars in the Vercel project
+- [x] Contracts deployed on Sepolia + Etherscan-verified (addresses in web `.env.local`)
+- [x] Frontend deployed (Vercel) — same `NEXT_PUBLIC_*` env vars set in the Vercel project
 - [ ] **3-min video** — real-person pitch (AI voice/video disqualifies). Nail the money shot: Sepolia explorer showing the amount as **ciphertext** while the swap still settles.
 - [ ] **X thread / article** introducing Samar
 - [ ] Submit repo + live demo URL
