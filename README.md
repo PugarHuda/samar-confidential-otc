@@ -72,20 +72,26 @@ Escrow nets to zero on every path. A rejection is indistinguishable from a fill 
 ```
 .
 ├── packages/
-│   ├── contracts/          # Hardhat + Zama fhEVM (Solidity 0.8.27)
+│   ├── contracts/          # Hardhat + Zama fhEVM (Solidity 0.8.27, viaIR)
 │   │   ├── contracts/
 │   │   │   ├── PrivateOTC.sol      # the OTC desk (Direct + RFQ Vickrey)
 │   │   │   └── SamarCToken.sol     # ERC-7984 demo token (deploy as cUSDC + cETH)
-│   │   ├── test/PrivateOTC.ts      # settlement tests with real balance assertions
-│   │   └── scripts/deploy.ts
-│   └── web/                # Next.js App Router + Tailwind + wagmi/RainbowKit + Relayer SDK
-│       ├── app/            # landing (/) + dark app (/app/*)
-│       ├── components/     # UI kit, AppShell, landing
-│       └── lib/            # config, ABIs, FHE (encrypt / user-decrypt), on-chain hooks
+│   │   ├── test/PrivateOTC.ts      # 13 settlement tests with real balance assertions
+│   │   └── scripts/                # deploy, e2e-settle / e2e (live proofs), stress-rfq
+│   ├── web/                # Samar OTC desk — Next.js App Router + wagmi/RainbowKit + relayer-sdk 0.4
+│   │   ├── app/            # landing (/) + dark app (/app/*)
+│   │   ├── components/     # UI kit, AppShell, landing
+│   │   └── lib/            # config, ABIs, FHE (encrypt / user-decrypt), on-chain hooks
+│   ├── wrapper/            # Confidential Wrapper Registry (bounty) — @zama-fhe/sdk v3
+│   ├── airdrop/            # Confidential Airdrop (TokenOps special bounty) — @tokenops/sdk + @zama-fhe/sdk v3
+│   └── hub/                # static suite hub linking all three apps
+├── submission/             # per-app video scripts, X-threads, forum posts, writeups
+├── RESOURCES.md            # reusable primitives catalog
+├── SUBMISSION.md           # turnkey judge index
 └── README.md
 ```
 
-Tech: `@fhevm/solidity` ^0.11, OpenZeppelin `confidential-contracts` (ERC-7984), `@zama-fhe/relayer-sdk` ^0.4, Next.js 14, wagmi v2 / viem v2 / RainbowKit v2, Tailwind.
+Tech (Samar / `web`): `@fhevm/solidity` ^0.11, OpenZeppelin `confidential-contracts` (ERC-7984), `@zama-fhe/relayer-sdk` ^0.4, Next.js 14, wagmi v2 / viem v2 / RainbowKit v2, Tailwind. The wrapper + airdrop apps use `@zama-fhe/sdk` v3 instead.
 
 ---
 
