@@ -75,9 +75,17 @@ export default function Home() {
     }
   };
 
+  // Parse a whole-token amount → BigInt count. Rejects decimals / negatives / junk up front with a clear
+  // message (raw BigInt("0.5") throws a cryptic SyntaxError, and BigInt("-5") would slip past the 0n guard).
+  const whole = (s: string): bigint => {
+    const t = (s || "").trim();
+    if (!/^\d+$/.test(t)) throw new Error("enter a whole number of tokens (no decimals or signs)");
+    return BigInt(t);
+  };
+
   // wrap/faucet use the UNDERLYING decimals; unwrap (unshield) uses the CONFIDENTIAL token's decimals (capped ≤6).
-  const units = (p: Pair, whole: string) => BigInt(whole || "0") * 10n ** BigInt(meta[p.cToken]?.dec ?? 18);
-  const cUnits = (p: Pair, whole: string) => BigInt(whole || "0") * 10n ** BigInt(meta[p.cToken]?.cDec ?? 6);
+  const units = (p: Pair, s: string) => whole(s) * 10n ** BigInt(meta[p.cToken]?.dec ?? 18);
+  const cUnits = (p: Pair, s: string) => whole(s) * 10n ** BigInt(meta[p.cToken]?.cDec ?? 6);
 
   const faucet = (p: Pair) =>
     run(`mint-${p.cToken}`, async () => {
@@ -106,12 +114,12 @@ export default function Home() {
 
   const unwrap = (p: Pair) =>
     run(`unwrap-${p.cToken}`, async () => {
-      const whole = amt[p.cToken] || "0";
-      if (BigInt(whole) === 0n) throw new Error("enter an amount (whole tokens) to unwrap");
-      const amount = cUnits(p, whole);
-      say(`Unwrapping ${whole} ${meta[p.cToken]?.underSymbol} — unshield orchestrates request → public-decrypt → finalize (~20–40s)…`);
+      const amtStr = amt[p.cToken] || "0";
+      const amount = cUnits(p, amtStr); // validates whole-token input; throws a clear message on decimals/junk
+      if (amount === 0n) throw new Error("enter an amount (whole tokens) to unwrap");
+      say(`Unwrapping ${amtStr} ${meta[p.cToken]?.underSymbol} — unshield orchestrates request → public-decrypt → finalize (~20–40s)…`);
       await unshield(pub, wallet, p.cToken, amount);
-      say(`✓ Unwrapped — ${whole} ${meta[p.cToken]?.underSymbol} returned to your wallet.`);
+      say(`✓ Unwrapped — ${amtStr} ${meta[p.cToken]?.underSymbol} returned to your wallet.`);
       loadPairs();
     })();
 
