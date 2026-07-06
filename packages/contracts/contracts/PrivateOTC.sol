@@ -54,7 +54,10 @@ contract PrivateOTC is ZamaEthereumConfig {
         euint64 amount; // encrypted — actual escrowed bid
     }
 
-    uint256 public constant MAX_BIDDERS = 10;
+    // finalizeAuction runs ~16 FHE ops/bidder in one tx. Measured live on Sepolia: 5 bidders finalize
+    // (HCU-bound, not gas — 6.2M of the 16.7M gas cap), 6 revert on the coprocessor HCU limit. Since a
+    // revert would strand escrowed bids (maker can't cancel once bids exist), the cap MUST stay ≤ 5.
+    uint256 public constant MAX_BIDDERS = 5;
 
     uint256 public nextId;
     mapping(uint256 => Intent) private _intents;

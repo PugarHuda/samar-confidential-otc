@@ -213,7 +213,7 @@ export default function Landing() {
               <RoadmapItem>Hidden reserve amount</RoadmapItem>
               <RoadmapItem>Counterparty-scoped view grants</RoadmapItem>
               <RoadmapItem>Atomic Strategy-B settlement</RoadmapItem>
-              <RoadmapItem>Sealed-bid Vickrey auctions (up to 10 bidders)</RoadmapItem>
+              <RoadmapItem>Sealed-bid Vickrey auctions (up to 5 bidders)</RoadmapItem>
               <RoadmapItem>Cancel an open intent anytime</RoadmapItem>
             </ul>
           </div>

@@ -25,7 +25,7 @@ const CARDS = [
     rows: [
       ["Parties", "N takers · Vickrey"],
       ["Pricing", "Vickrey (2nd price)"],
-      ["Max bidders", "10"],
+      ["Max bidders", "5"],
     ],
   },
 ];

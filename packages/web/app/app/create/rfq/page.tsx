@@ -67,7 +67,7 @@ export default function RfqForm() {
         <MsIcon name="arrow_back" size={14} /> modes
       </Link>
       <h1 className="font-display text-2xl font-700">RFQ · Sealed-bid Vickrey</h1>
-      <p className="mb-6 font-mono text-[12px] text-muted">N_TAKERS · SECOND_PRICE · MAX_10_BIDDERS</p>
+      <p className="mb-6 font-mono text-[12px] text-muted">N_TAKERS · SECOND_PRICE · MAX_5_BIDDERS</p>
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         <Panel>
@@ -118,7 +118,7 @@ export default function RfqForm() {
           <div className="font-mono text-[12px] text-dim">VICKREY_RULES</div>
           <ul className="mt-3 space-y-2 text-sm text-muted">
             <li className="flex gap-2">
-              <span className="text-yellow">›</span> Up to 10 takers submit sealed encrypted bids.
+              <span className="text-yellow">›</span> Up to 5 takers submit sealed encrypted bids.
             </li>
             <li className="flex gap-2">
               <span className="text-yellow">›</span> Highest bid wins the asset.
