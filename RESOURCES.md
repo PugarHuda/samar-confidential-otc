@@ -5,7 +5,7 @@ Building blocks from this repo that other Zama builders can lift directly. All v
 ## Contracts
 
 - **All-or-nothing confidential settlement ("Strategy B")** — `packages/contracts/contracts/PrivateOTC.sol` (`acceptIntent`). Settle a two-sided trade with encrypted amounts that never reverts on a secret condition: `FHE.select` routes funds so a filled trade and a no-op refund are indistinguishable on-chain. Escrow nets to zero on every path.
-- **Sealed-bid Vickrey auction on encrypted bids** — `PrivateOTC.sol` (`finalizeAuction`). Find first/second-highest across encrypted bids and settle per-bidder via `FHE.select` (winner pays the second price), with **no winner or price ever revealed on-chain**. `ponytail:` note documents the distinct-bid assumption.
+- **Sealed-bid Vickrey auction on encrypted bids** — `PrivateOTC.sol` (`finalizeAuction`). Find first/second-highest across encrypted bids and settle per-bidder via `FHE.select`: winner pays the second price **floored at the maker's encrypted reserve**, a running `awarded` flag guarantees exactly one winner on a top tie, and if no bid clears the reserve the asset returns to the maker and every bid is refunded — with **no winner or price ever revealed on-chain**.
 - **Hidden reserve + counterparty-scoped decrypt** — `createIntent` + `grantView` (`FHE.allow(handle, taker)`) let one chosen counterparty decrypt terms before committing.
 - **Minimal ERC-7984 demo token with open faucet** — `packages/contracts/contracts/SamarCToken.sol`.
 
