@@ -137,15 +137,16 @@ export function useSamar() {
       Array.from({ length: n }, (_, i) =>
         pub!
           .readContract({ address: otc, abi: otcAbi, functionName: "getIntent", args: [BigInt(i)] })
+          // viem returns multiple return values positionally: [maker, sellToken, buyToken, mode, status, expiresAt, allowedTaker]
           .then((r: any) => ({
             id: i,
-            maker: r.maker,
-            sellToken: r.sellToken,
-            buyToken: r.buyToken,
-            mode: Number(r.mode),
-            status: Number(r.status),
-            expiresAt: Number(r.expiresAt),
-            allowedTaker: r.allowedTaker,
+            maker: r[0],
+            sellToken: r[1],
+            buyToken: r[2],
+            mode: Number(r[3]),
+            status: Number(r[4]),
+            expiresAt: Number(r[5]),
+            allowedTaker: r[6],
           })),
       ),
     );
