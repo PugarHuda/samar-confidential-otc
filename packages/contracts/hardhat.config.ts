@@ -19,6 +19,7 @@ const config: HardhatUserConfig = {
     settings: {
       metadata: { bytecodeHash: "none" },
       optimizer: { enabled: true, runs: 800 },
+      viaIR: true, // RFQ settlement carries many encrypted handles — needed to avoid stack-too-deep
       evmVersion: "cancun",
     },
   },

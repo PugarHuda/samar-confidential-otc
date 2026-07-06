@@ -22,14 +22,15 @@ export default function RfqForm() {
   const sell = TOKENS.find((t) => t.key === sellKey)!;
   const buy = TOKENS.find((t) => t.key !== sellKey)!;
   const [sellAmt, setSellAmt] = useState("5");
+  const [reserve, setReserve] = useState("8000");
   const [win, setWin] = useState(3600);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
   async function submit() {
     setErr("");
-    if (!validAmount(sellAmt)) {
-      setErr("amount must be a whole number between 1 and 1e15");
+    if (!validAmount(sellAmt) || !validAmount(reserve)) {
+      setErr("amounts must be whole numbers between 1 and 1e15");
       return;
     }
     setBusy(true);
@@ -38,6 +39,7 @@ export default function RfqForm() {
         sellToken: sell.address,
         buyToken: buy.address,
         sell: Number(sellAmt),
+        reserve: Number(reserve),
         expiresAt: Math.floor(Date.now() / 1000) + win,
       });
       router.push("/app");
@@ -88,6 +90,16 @@ export default function RfqForm() {
           </div>
 
           <div className="mt-4">
+            <Label>
+              Reserve price <span className="ml-1 rounded bg-panel2 px-1.5 py-0.5 text-[10px] text-yellow">HIDDEN</span>
+            </Label>
+            <input className={field} value={reserve} onChange={(e) => setReserve(e.target.value)} inputMode="numeric" />
+            <p className="mt-1 font-mono text-[10px] text-faint">
+              Encrypted floor in {buy.symbol} — no bid below it wins, and it is the minimum clearing price.
+            </p>
+          </div>
+
+          <div className="mt-4">
             <Label>Bidding window</Label>
             <Segmented value={win} onChange={(v) => setWin(v)} options={WINDOWS.map(([l, v]) => ({ label: l, value: v }))} />
           </div>
@@ -112,17 +124,21 @@ export default function RfqForm() {
               <span className="text-yellow">›</span> Highest bid wins the asset.
             </li>
             <li className="flex gap-2">
-              <span className="text-yellow">›</span> Winner pays the <span className="text-txt">second-highest</span> price.
+              <span className="text-yellow">›</span> Winner pays the <span className="text-txt">second-highest</span> price, floored
+              at your reserve.
+            </li>
+            <li className="flex gap-2">
+              <span className="text-yellow">›</span> No bid clears the reserve → asset returns to you, every bid refunded.
             </li>
             <li className="flex gap-2">
               <span className="text-yellow">›</span> Every comparison runs on encrypted handles — winner &amp; clearing price
               never revealed on-chain.
             </li>
           </ul>
-          <pre className="mt-4 overflow-x-auto rounded-lg bg-page p-3 font-mono text-[11px] leading-relaxed text-faint">{`ebool newHigh = FHE.gt(cand, highest);
-second  = FHE.select(newHigh, highest, second);
-highest = FHE.select(newHigh, cand, highest);
-// winner pays 'second', refunded the overpay`}</pre>
+          <pre className="mt-4 overflow-x-auto rounded-lg bg-page p-3 font-mono text-[11px] leading-relaxed text-faint">{`ebool sold  = FHE.ge(highest, reserve);
+euint64 price = FHE.max(second, reserve);
+ebool win   = eq(bid, highest) & !awarded & sold;
+// unique winner; pays 'price', refunded the overpay`}</pre>
         </Panel>
       </div>
     </Gate>

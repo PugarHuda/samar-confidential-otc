@@ -213,5 +213,73 @@ describe("PrivateOTC", function () {
       await expect(submitBid(taker, 7000)).to.be.revertedWith("already bid");
       await expect(otc.connect(other).finalizeAuction(0)).to.be.revertedWith("not maker / not expired");
     });
+
+    it("top tie: exactly ONE winner takes the asset, the other is fully refunded, maker collects the price once", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(8000); // ties at the top
+      await usdc.connect(other).mint(8000); // ties at the top
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(other).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 0, RFQ);
+      await submitBid(taker, 8000); // first equal-to-highest → the unique winner
+      await submitBid(other, 8000);
+      await otc.connect(maker).finalizeAuction(0);
+
+      // winner (taker, bid first): 5 cETH, pays price 8000, refund 0
+      expect(await bal(eth, ethAddr, taker)).to.equal(5n);
+      expect(await bal(usdc, usdcAddr, taker)).to.equal(0n);
+      // the other tied bidder gets NO asset and a FULL refund — not robbed
+      expect(await bal(eth, ethAddr, other)).to.equal(0n);
+      expect(await bal(usdc, usdcAddr, other)).to.equal(8000n);
+      // maker collects the clearing price exactly ONCE, gives up one asset
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(8000n);
+      expect(await bal(eth, ethAddr, maker)).to.equal(0n);
+    });
+
+    it("reserve floor: the top bid below the maker's reserve is a no-op — asset back, every bid refunded", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(8000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 9000, RFQ); // hidden reserve 9000
+      await submitBid(taker, 8000); // below reserve → nobody wins
+      await otc.connect(maker).finalizeAuction(0);
+
+      expect(await bal(eth, ethAddr, maker)).to.equal(5n); // asset returned
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(0n);
+      expect(await bal(eth, ethAddr, taker)).to.equal(0n);
+      expect(await bal(usdc, usdcAddr, taker)).to.equal(8000n); // bid refunded in full
+    });
+
+    it("reserve floor: a lone bid above the reserve wins but pays the reserve, not zero", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(10000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 6000, RFQ); // reserve 6000
+      await submitBid(taker, 10000); // sole bidder; second price is 0, floored to 6000
+      await otc.connect(maker).finalizeAuction(0);
+
+      expect(await bal(eth, ethAddr, taker)).to.equal(5n);
+      expect(await bal(usdc, usdcAddr, taker)).to.equal(4000n); // 10000 - reserve 6000
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(6000n); // reserve, not 0
+      expect(await bal(eth, ethAddr, maker)).to.equal(0n);
+    });
+
+    it("allowedTaker locks an RFQ auction — only the named bidder may submit", async () => {
+      await eth.connect(maker).mint(5);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).mint(10000);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 0, RFQ, takerAddr);
+      await expect(submitBid(other, 9000)).to.be.revertedWith("locked");
+      await submitBid(taker, 9000); // the allowed bidder gets through
+      expect(await otc.getBidCount(0)).to.equal(1n);
+    });
   });
 });

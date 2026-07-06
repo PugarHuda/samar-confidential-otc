@@ -72,9 +72,15 @@ export function useSamar() {
     });
   }
 
-  async function createRFQ(opts: { sellToken: `0x${string}`; buyToken: `0x${string}`; sell: number; expiresAt: number }) {
+  async function createRFQ(opts: {
+    sellToken: `0x${string}`;
+    buyToken: `0x${string}`;
+    sell: number;
+    reserve: number; // encrypted floor — a winning bid must clear it, and sets the min clearing price
+    expiresAt: number;
+  }) {
     await ensureOperator(opts.sellToken);
-    const { handles, proof } = await encryptValues(otc, address!, [BigInt(opts.sell), 0n]); // minBuy unused in RFQ
+    const { handles, proof } = await encryptValues(otc, address!, [BigInt(opts.sell), BigInt(opts.reserve)]);
     await send({
       address: otc,
       abi: otcAbi,

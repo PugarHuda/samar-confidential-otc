@@ -22,13 +22,13 @@ All three are surfaced at the **suite hub → https://samar-hub.vercel.app**. Th
 
 | Contract | Address |
 |---|---|
-| **PrivateOTC** | [`0xeC9db6251178EB090f436Fb0667Ace390adA2617`](https://sepolia.etherscan.io/address/0xeC9db6251178EB090f436Fb0667Ace390adA2617) |
+| **PrivateOTC** | [`0x7d5CDDE8495f60787974eED3ED44FD4E36449809`](https://sepolia.etherscan.io/address/0x7d5CDDE8495f60787974eED3ED44FD4E36449809) |
 | cUSDC (SamarCToken) | [`0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e`](https://sepolia.etherscan.io/address/0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e) |
 | cETH (SamarCToken) | [`0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c`](https://sepolia.etherscan.io/address/0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c) |
 
 > ✅ All three contracts are **verified on Sepolia Etherscan** — click any address to read the exact Solidity (`FHE.select` settlement, Vickrey loop, ACL).
 
-**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor. See live settlement activity on [PrivateOTC · Sepolia Etherscan](https://sepolia.etherscan.io/address/0xeC9db6251178EB090f436Fb0667Ace390adA2617).
+**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor. See live settlement activity on [PrivateOTC · Sepolia Etherscan](https://sepolia.etherscan.io/address/0x7d5CDDE8495f60787974eED3ED44FD4E36449809).
 
 ---
 
@@ -95,7 +95,7 @@ Tech: `@fhevm/solidity` ^0.11, OpenZeppelin `confidential-contracts` (ERC-7984),
 ```bash
 cd packages/contracts
 npm install
-npm test                 # 8 passing — Direct + RFQ Vickrey settlement, with real balance assertions
+npm test                 # 13 passing — Direct + RFQ Vickrey settlement, with real balance assertions
 ```
 
 Deploy to Sepolia:
@@ -120,8 +120,8 @@ Demo flow: **Faucet** (mint + authorize both tokens) → **Create Intent → Dir
 
 ## Status: honest scope
 
-- ✅ **Live now** — **Direct OTC** (encrypted intents, hidden reserve, counterparty-scoped view grants, atomic Strategy-B settlement, cancel) and **RFQ** (sealed-bid **Vickrey** second-price auctions, up to 10 bidders — highest bidder wins and pays the second price, all on encrypted handles).
-- 🗺 **Coming soon** — partial fills, compliance-gated fills (allowlist / KYC), auction reserve floors.
+- ✅ **Live now** — **Direct OTC** (encrypted intents, hidden reserve, counterparty-scoped view grants, atomic Strategy-B settlement, cancel) and **RFQ** (sealed-bid **Vickrey** second-price auctions, up to 10 bidders — highest bidder wins and pays the second price **floored at the maker's encrypted reserve**, a single unique winner on a top tie, and a no-sale refund if no bid clears the reserve — all on encrypted handles; `allowedTaker` locks bidding too).
+- 🗺 **Coming soon** — partial fills, compliance-gated fills (allowlist / KYC).
 
 > Note: RFQ `finalizeAuction` runs FHE ops per bidder; practical for a handful of bidders on Sepolia, `MAX_BIDDERS = 10`.
 

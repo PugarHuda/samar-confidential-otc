@@ -25,7 +25,7 @@ Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/sa
 ## Deployed contracts (Samar, Sepolia)
 | Contract | Address |
 |---|---|
-| PrivateOTC | `0xeC9db6251178EB090f436Fb0667Ace390adA2617` |
+| PrivateOTC | `0x7d5CDDE8495f60787974eED3ED44FD4E36449809` |
 | cUSDC (SamarCToken) | `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e` |
 | cETH (SamarCToken) | `0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c` |
 

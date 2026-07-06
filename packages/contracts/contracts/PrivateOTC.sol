@@ -20,9 +20,10 @@ import {IERC7984} from "@openzeppelin/confidential-contracts/interfaces/IERC7984
 /// swaps both legs; an offer below the hidden reserve is a no-op that refunds both sides. Escrow nets to zero.
 ///
 /// RFQ mode (Vickrey, second-price sealed bid): bidders escrow encrypted bids; `finalizeAuction` gives the
-/// highest bidder the asset and charges them the SECOND-highest price — every comparison on encrypted handles,
-/// settled per-bidder via FHE.select so no winner identity or bid is ever revealed on-chain.
-/// ponytail: assumes a unique highest bid; exact ties are resolved arbitrarily by transfer availability.
+/// highest bidder the asset and charges them the SECOND-highest price, floored at the maker's encrypted
+/// reserve (`minBuyAmount`) — every comparison on encrypted handles, settled per-bidder via FHE.select so no
+/// winner identity or bid is ever revealed on-chain. Exactly one winner: a top-tie is broken toward the first
+/// such bidder, and if no bid clears the reserve the asset returns to the maker and every bid is refunded.
 contract PrivateOTC is ZamaEthereumConfig {
     enum Mode {
         Direct,
@@ -184,6 +185,7 @@ contract PrivateOTC is ZamaEthereumConfig {
         require(it.status == Status.Open, "not open");
         require(block.timestamp <= it.expiresAt, "bidding closed");
         require(msg.sender != it.maker, "maker cannot bid");
+        if (it.allowedTaker != address(0)) require(msg.sender == it.allowedTaker, "locked");
         require(!_hasBid[id][msg.sender], "already bid");
         require(_bids[id].length < MAX_BIDDERS, "auction full");
 
@@ -230,21 +232,28 @@ contract PrivateOTC is ZamaEthereumConfig {
             second = FHE.select(newSecond, cand, second);
         }
 
-        // Per-bidder conditional settlement.
+        // Clearing price = second-highest bid, floored at the maker's hidden reserve; a winner exists
+        // only if the top bid clears that reserve. All encrypted, so neither leaks on-chain.
+        euint64 reserve = it.minBuyAmount;
+        ebool sold = FHE.ge(highest, reserve);
+        euint64 price = FHE.max(second, reserve);
+        euint64 zero = FHE.asEuint64(0);
+
+        // Per-bidder conditional settlement. Exactly one winner: the FIRST bid equal to `highest`
+        // (the `awarded` flag breaks ties, so a top-tie never double-pays the asset), and only when sold.
+        ebool awarded = FHE.asEbool(false);
         for (uint256 i = 0; i < bids.length; i++) {
-            address bidder = bids[i].bidder;
             euint64 bid = bids[i].amount;
-            ebool isWinner = FHE.eq(bid, highest);
-            euint64 zero = FHE.asEuint64(0);
+            ebool isWinner = FHE.and(FHE.and(FHE.eq(bid, highest), FHE.not(awarded)), sold);
+            awarded = FHE.or(awarded, isWinner);
 
-            euint64 toBidderAsset = FHE.select(isWinner, it.sellAmount, zero); // winner gets the asset
-            euint64 refund = FHE.select(isWinner, FHE.sub(bid, second), bid); // winner: overpay back; loser: full refund
-            euint64 toMaker = FHE.select(isWinner, second, zero); // maker receives the second price
-
-            _payout(it.sellToken, bidder, toBidderAsset);
-            _payout(it.buyToken, bidder, refund);
-            _payout(it.buyToken, it.maker, toMaker);
+            _payout(it.sellToken, bids[i].bidder, FHE.select(isWinner, it.sellAmount, zero)); // winner gets the asset
+            _payout(it.buyToken, bids[i].bidder, FHE.select(isWinner, FHE.sub(bid, price), bid)); // winner overpay back; loser full
+            _payout(it.buyToken, it.maker, FHE.select(isWinner, price, zero)); // maker receives the clearing price
         }
+
+        // No bid cleared the reserve — return the escrowed asset to the maker.
+        _payout(it.sellToken, it.maker, FHE.select(sold, zero, it.sellAmount));
         emit AuctionFinalized(id);
     }
 

@@ -225,7 +225,7 @@ export default function Landing() {
             <ul className="mt-4 space-y-2.5 text-ink/80">
               <RoadmapItem dim>Partial fills</RoadmapItem>
               <RoadmapItem dim>Compliance-gated fills (allowlist / KYC)</RoadmapItem>
-              <RoadmapItem dim>Auction reserve floors &amp; more token pairs</RoadmapItem>
+              <RoadmapItem dim>More token pairs</RoadmapItem>
             </ul>
           </div>
         </div>
