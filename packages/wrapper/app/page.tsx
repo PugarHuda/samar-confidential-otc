@@ -192,13 +192,15 @@ export default function Home() {
                     inputMode="numeric"
                     disabled={!isConnected || wrongNet}
                   />
-                  <Button variant="ghost" disabled={!!busy || !isConnected || wrongNet} onClick={() => faucet(p)}>
+                  {/* faucet/wrap/unwrap scale by this pair's decimals — gate on `m` so a click before meta loads
+                      can't fall back to default decimals and mis-scale the amount. */}
+                  <Button variant="ghost" disabled={!!busy || !isConnected || wrongNet || !m} onClick={() => faucet(p)}>
                     {busy === `mint-${p.cToken}` ? "Minting…" : "Faucet 1000"}
                   </Button>
-                  <Button variant="primary" disabled={!!busy || !isConnected || wrongNet} onClick={() => wrap(p)}>
+                  <Button variant="primary" disabled={!!busy || !isConnected || wrongNet || !m} onClick={() => wrap(p)}>
                     {busy === `wrap-${p.cToken}` ? "Wrapping…" : "Wrap →"}
                   </Button>
-                  <Button variant="ghost" disabled={!!busy || !isConnected || wrongNet} onClick={() => unwrap(p)}>
+                  <Button variant="ghost" disabled={!!busy || !isConnected || wrongNet || !m} onClick={() => unwrap(p)}>
                     {busy === `unwrap-${p.cToken}` ? "Unwrapping…" : "← Unwrap"}
                   </Button>
                   <Button variant="yellow" disabled={!!busy || !isConnected || wrongNet} onClick={() => decrypt(p)}>

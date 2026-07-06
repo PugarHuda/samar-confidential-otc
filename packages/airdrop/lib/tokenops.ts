@@ -118,5 +118,7 @@ export async function decryptBalance(publicClient: any, walletClient: any, accou
     startTimestamp: start,
     durationDays: days,
   });
-  return BigInt(res[handle]);
+  const raw = res[handle] ?? res[handle.toLowerCase()];
+  if (raw === undefined) throw new Error("relayer returned no plaintext for this balance handle");
+  return BigInt(raw);
 }
