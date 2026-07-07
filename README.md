@@ -22,13 +22,13 @@ All three are surfaced at the **suite hub → https://samar-hub.vercel.app**. Th
 
 | Contract | Address |
 |---|---|
-| **PrivateOTC** | [`0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F`](https://sepolia.etherscan.io/address/0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F) |
+| **PrivateOTC** | [`0x7bde6aC99D3Df939941232159b2E675ACBD5A932`](https://sepolia.etherscan.io/address/0x7bde6aC99D3Df939941232159b2E675ACBD5A932) |
 | cUSDC (SamarCToken) | [`0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e`](https://sepolia.etherscan.io/address/0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e) |
 | cETH (SamarCToken) | [`0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c`](https://sepolia.etherscan.io/address/0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c) |
 
 > ✅ All three contracts are **verified on Sepolia Etherscan** — click any address to read the exact Solidity (`FHE.select` settlement, Vickrey loop, ACL).
 
-**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor. See live settlement activity on [PrivateOTC · Sepolia Etherscan](https://sepolia.etherscan.io/address/0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F).
+**Verified end-to-end on Sepolia** via `packages/contracts/scripts/e2e-settle.ts` — a full **Direct** trade (both legs swap, amounts stay encrypted) and a 2-bidder **RFQ Vickrey** auction (winner charged the **second** price and refunded the overpay; loser refunded in full), asserted on decrypted balances. The complete confidential-trade lifecycle — encrypt → create → accept / bid → `finalizeAuction` — runs on the real relayer + coprocessor. See live settlement activity on [PrivateOTC · Sepolia Etherscan](https://sepolia.etherscan.io/address/0x7bde6aC99D3Df939941232159b2E675ACBD5A932).
 
 ---
 
@@ -101,7 +101,7 @@ Tech (Samar / `web`): `@fhevm/solidity` ^0.11, OpenZeppelin `confidential-contra
 ```bash
 cd packages/contracts
 npm install
-npm test                 # 13 passing — Direct + RFQ Vickrey settlement, with real balance assertions
+npm test                 # 20 passing — Direct + RFQ Vickrey settlement, with real balance assertions
 ```
 
 Deploy to Sepolia:

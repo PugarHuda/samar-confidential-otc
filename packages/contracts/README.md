@@ -9,7 +9,7 @@ Hardhat + Zama fhEVM (Solidity 0.8.27, optimizer + `viaIR`). The full protocol w
 
 | Contract | Address |
 |---|---|
-| PrivateOTC | `0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F` |
+| PrivateOTC | `0x7bde6aC99D3Df939941232159b2E675ACBD5A932` |
 | cUSDC | `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e` |
 | cETH | `0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c` |
 
@@ -17,7 +17,7 @@ Hardhat + Zama fhEVM (Solidity 0.8.27, optimizer + `viaIR`). The full protocol w
 
 ```bash
 npm install
-npm test                                  # 13 passing (Direct + RFQ Vickrey, real balance assertions)
+npm test                                  # 20 passing (Direct + RFQ Vickrey, real balance assertions)
 npm run deploy:sepolia                     # deploy cUSDC / cETH / PrivateOTC (needs PRIVATE_KEY + Sepolia ETH)
 npx hardhat run scripts/deploy-otc.ts --network sepolia   # redeploy only PrivateOTC
 npx hardhat verify --network sepolia <addr>

@@ -22,10 +22,14 @@ Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/sa
 - Wrapper unwrap → finalize (full round-trip, ERC-20 returned): `packages/wrapper/scripts/smoke-unshield.mjs`
 - Airdrop (create+fund → authorize → claim → decrypt): `packages/airdrop/scripts/smoke.mjs`
 
+## Threat model & known limitations
+An honest scope of what the contract guarantees (fund safety, third-party + winner-identity confidentiality)
+and where it doesn't (liveness/griefing trade-offs of the privacy design): `submission/threat-model.md`.
+
 ## Deployed contracts (Samar, Sepolia)
 | Contract | Address |
 |---|---|
-| PrivateOTC | `0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F` |
+| PrivateOTC | `0x7bde6aC99D3Df939941232159b2E675ACBD5A932` |
 | cUSDC (SamarCToken) | `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e` |
 | cETH (SamarCToken) | `0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c` |
 

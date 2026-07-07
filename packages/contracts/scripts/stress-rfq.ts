@@ -5,7 +5,7 @@ import { createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/node";
 // Usage: BIDDERS=10 npx hardhat run scripts/stress-rfq.ts --network sepolia
 const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e";
 const CETH = "0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c";
-const OTC = "0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F";
+const OTC = "0x7bde6aC99D3Df939941232159b2E675ACBD5A932";
 const UNTIL = 2_000_000_000;
 const EXPIRES = 2_000_000_000;
 const N = Number(process.env.BIDDERS || "10");

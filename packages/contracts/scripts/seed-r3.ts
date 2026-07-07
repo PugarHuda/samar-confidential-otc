@@ -7,7 +7,7 @@ import { createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/node";
 
 const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e";
 const CETH = "0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c";
-const OTC = "0x880a9c4dbB3b2749a8F11011B9ed7D8c74B0C35F";
+const OTC = "0x7bde6aC99D3Df939941232159b2E675ACBD5A932";
 const UNTIL = 2_000_000_000;
 const EXPIRES = 2_000_000_000;
 const HEX = (h: any) => (typeof h === "string" ? (h.startsWith("0x") ? h : "0x" + h) : ethers.hexlify(h));
@@ -65,12 +65,15 @@ async function main() {
       await send("fund", () => maker.sendTransaction({ to: w.address, value: ethers.parseEther("0.04") }));
   }
 
-  // target: highest-id maker Open RFQ (mode 1, status 0). Create one if none.
+  // target: an Open RFQ that OUR fixed bidders already bid on (a crashed prior run to resume).
+  // We deliberately do NOT adopt someone else's open auction (e.g. a seed.ts open-with-live-bids
+  // intent we want to leave interactive) — if none of ours is found, create a fresh one.
   const nextId = await otcM.nextId();
   let target: bigint | null = null;
   for (let id = nextId - 1n; id >= 0n && id > nextId - 12n; id--) {
     const it = await otcM.getIntent(id);
-    if (it[0].toLowerCase() === maker.address.toLowerCase() && Number(it[3]) === 1 && Number(it[4]) === 0) { target = id; break; }
+    const mineOpenRFQ = it[0].toLowerCase() === maker.address.toLowerCase() && Number(it[3]) === 1 && Number(it[4]) === 0;
+    if (mineOpenRFQ && ((await otcM.hasBid(id, B.address)) || (await otcM.hasBid(id, C.address)))) { target = id; break; }
   }
   if (target === null) {
     await mint(maker, CETH, 2); await ensureOp(maker, CETH);
