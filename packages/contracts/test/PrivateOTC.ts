@@ -281,5 +281,117 @@ describe("PrivateOTC", function () {
       await submitBid(taker, 9000); // the allowed bidder gets through
       expect(await otc.getBidCount(0)).to.equal(1n);
     });
+
+    it("Vickrey is order-independent: bids submitted low→high→mid still clear at the 2nd price", async () => {
+      await eth.connect(maker).mint(6);
+      await usdc.connect(other).mint(7000); // submitted first, lowest
+      await usdc.connect(taker).mint(10000); // submitted second, highest → winner
+      await usdc.connect(fourth).mint(9000); // submitted last, 2nd-highest → clearing price
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      for (const s of [other, taker, fourth]) await usdc.connect(s).setOperator(otcAddr, UNTIL);
+
+      await createIntent(6, 0, RFQ);
+      await submitBid(other, 7000);
+      await submitBid(taker, 10000);
+      await submitBid(fourth, 9000);
+      await otc.connect(maker).finalizeAuction(0);
+
+      expect(await bal(eth, ethAddr, taker)).to.equal(6n); // highest wins regardless of order
+      expect(await bal(usdc, usdcAddr, taker)).to.equal(1000n); // pays 2nd price 9000, refunded 1000
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(9000n); // maker gets the 2nd price exactly once
+      expect(await bal(usdc, usdcAddr, other)).to.equal(7000n); // losers fully refunded
+      expect(await bal(usdc, usdcAddr, fourth)).to.equal(9000n);
+    });
+  });
+
+  describe("Guards & boundaries", function () {
+    it("Direct: an offer EXACTLY at the reserve settles (ge is inclusive)", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(9000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 9000);
+      await accept(taker, 9000); // offer == reserve
+
+      expect(await bal(eth, ethAddr, taker)).to.equal(5n);
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(9000n);
+    });
+
+    it("RFQ: a top bid EXACTLY at the reserve sells at the reserve", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(9000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 9000, RFQ);
+      await submitBid(taker, 9000); // == reserve → sells, price floored to reserve
+      await otc.connect(maker).finalizeAuction(0);
+
+      expect(await bal(eth, ethAddr, taker)).to.equal(5n);
+      expect(await bal(usdc, usdcAddr, taker)).to.equal(0n); // bid 9000 - price 9000
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(9000n);
+    });
+
+    it("cannot settle twice: a filled Direct intent rejects a second accept", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(10000);
+      await usdc.connect(other).mint(10000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(other).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 9000);
+      await accept(taker, 10000);
+      await expect(accept(other, 10000)).to.be.revertedWith("not open");
+    });
+
+    it("cannot finalize an RFQ auction twice", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(10000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 0, RFQ);
+      await submitBid(taker, 10000);
+      await otc.connect(maker).finalizeAuction(0);
+      await expect(otc.connect(maker).finalizeAuction(0)).to.be.revertedWith("not open");
+    });
+
+    it("cancelIntent is blocked once bids exist, and only the maker may cancel", async () => {
+      await eth.connect(maker).mint(5);
+      await usdc.connect(taker).mint(10000);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await usdc.connect(taker).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 0, RFQ);
+      await expect(otc.connect(other).cancelIntent(0)).to.be.revertedWith("not maker");
+      await submitBid(taker, 10000);
+      await expect(otc.connect(maker).cancelIntent(0)).to.be.revertedWith("has bids");
+    });
+
+    it("MAX_BIDDERS caps the book at 5: the 6th bid reverts and 5 still finalize correctly", async () => {
+      const signers = await ethers.getSigners();
+      const bidders = signers.slice(2, 8); // six distinct non-maker addresses
+      await eth.connect(maker).mint(5);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      const amounts = [1000, 2000, 3000, 4000, 5000]; // 5th is highest → winner, 2nd price 4000
+      for (let i = 0; i < 5; i++) {
+        await usdc.connect(bidders[i]).mint(amounts[i]);
+        await usdc.connect(bidders[i]).setOperator(otcAddr, UNTIL);
+      }
+      await usdc.connect(bidders[5]).mint(9000);
+      await usdc.connect(bidders[5]).setOperator(otcAddr, UNTIL);
+
+      await createIntent(5, 0, RFQ);
+      for (let i = 0; i < 5; i++) await submitBid(bidders[i], amounts[i]);
+      expect(await otc.getBidCount(0)).to.equal(5n);
+      await expect(submitBid(bidders[5], 9000)).to.be.revertedWith("auction full");
+
+      await otc.connect(maker).finalizeAuction(0);
+      expect(await bal(eth, ethAddr, bidders[4])).to.equal(5n); // highest bid wins the asset
+      expect(await bal(usdc, usdcAddr, bidders[4])).to.equal(1000n); // pays 2nd price 4000 of its 5000
+      expect(await bal(usdc, usdcAddr, maker)).to.equal(4000n); // maker gets the 2nd price
+    });
   });
 });

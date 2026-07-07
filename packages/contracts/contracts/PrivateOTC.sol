@@ -244,7 +244,12 @@ contract PrivateOTC is ZamaEthereumConfig {
 
         // Per-bidder conditional settlement. Exactly one winner: the FIRST bid equal to `highest`
         // (the `awarded` flag breaks ties, so a top-tie never double-pays the asset), and only when sold.
+        // The maker's proceeds are ACCUMULATED into one handle and paid ONCE after the loop: paying the
+        // clearing price per-row would give the maker N separate transfers (one non-zero), and since the
+        // maker can decrypt each of their own legs they could map the non-zero row back to the winner's
+        // address (bid order is public via BidSubmitted). A single aggregated transfer hides the winner.
         ebool awarded = FHE.asEbool(false);
+        euint64 makerProceeds = zero;
         for (uint256 i = 0; i < bids.length; i++) {
             euint64 bid = bids[i].amount;
             ebool isWinner = FHE.and(FHE.and(FHE.eq(bid, highest), FHE.not(awarded)), sold);
@@ -252,9 +257,10 @@ contract PrivateOTC is ZamaEthereumConfig {
 
             _payout(it.sellToken, bids[i].bidder, FHE.select(isWinner, it.sellAmount, zero)); // winner gets the asset
             _payout(it.buyToken, bids[i].bidder, FHE.select(isWinner, FHE.sub(bid, price), bid)); // winner overpay back; loser full
-            _payout(it.buyToken, it.maker, FHE.select(isWinner, price, zero)); // maker receives the clearing price
+            makerProceeds = FHE.add(makerProceeds, FHE.select(isWinner, price, zero)); // clearing price, credited once below
         }
 
+        _payout(it.buyToken, it.maker, makerProceeds); // single transfer — winner row is not observable to the maker
         // No bid cleared the reserve — return the escrowed asset to the maker.
         _payout(it.sellToken, it.maker, FHE.select(sold, zero, it.sellAmount));
         emit AuctionFinalized(id);
