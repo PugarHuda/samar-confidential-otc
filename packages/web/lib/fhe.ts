@@ -6,6 +6,10 @@ import { bytesToHex, type Hex } from "viem";
 
 let instancePromise: Promise<any> | null = null;
 
+// Fallback read provider for wallets that inject no window.ethereum (WalletConnect / Coinbase).
+// MetaMask-injected still takes priority so the proven path is unchanged.
+const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+
 async function getInstance(): Promise<any> {
   if (!instancePromise) {
     instancePromise = (async () => {
@@ -13,8 +17,11 @@ async function getInstance(): Promise<any> {
       // window.relayerSDK global that a CDN <script> must populate first — wrong for us.
       const sdk: any = await import("@zama-fhe/relayer-sdk/web");
       await sdk.initSDK(); // load FHE WASM
-      return sdk.createInstance({ ...sdk.SepoliaConfig, network: (window as any).ethereum });
-    })();
+      return sdk.createInstance({ ...sdk.SepoliaConfig, network: (window as any).ethereum ?? SEPOLIA_RPC });
+    })().catch((e) => {
+      instancePromise = null; // don't memoize a transient WASM/init failure — let the next call retry
+      throw e;
+    });
   }
   return instancePromise;
 }

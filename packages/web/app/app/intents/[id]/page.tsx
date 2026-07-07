@@ -85,6 +85,8 @@ export default function IntentDetail() {
   const open = it.status === 0;
   const now = Math.floor(Date.now() / 1000);
   const expired = open && it.expiresAt < now;
+  // permissioned intents: only the allowed taker (or anyone, if unset) may accept/bid
+  const canTake = zeroAddressIsOpen(it.allowedTaker) || it.allowedTaker.toLowerCase() === s.address?.toLowerCase();
 
   return (
     <Gate requireConnect={false}>
@@ -154,8 +156,22 @@ export default function IntentDetail() {
         </Panel>
 
         <div className="flex flex-col gap-4">
+          {/* Permissioned: locked to a specific taker that isn't you */}
+          {open && !expired && !mine && !canTake && (
+            <Panel className="border-yellow/20">
+              <div className="flex items-center gap-1.5 font-mono text-[12px] text-yellow">
+                <MsIcon name="lock" size={14} /> LOCKED_INTENT
+              </div>
+              <p className="mt-2 text-sm text-muted">
+                This intent is permissioned — only <span className="font-mono text-txt">{shortAddr(it.allowedTaker)}</span> can
+                fill it. The <span className="font-mono text-dim">allowedTaker</span> gate is enforced in the contract, so your
+                wallet can&apos;t accept or bid. This is how Samar puts compliance (e.g. a KYC&apos;d counterparty) on-chain.
+              </p>
+            </Panel>
+          )}
+
           {/* Taker: accept */}
-          {open && !expired && !mine && it.mode === 0 && (
+          {open && !expired && !mine && canTake && it.mode === 0 && (
             <Panel>
               <div className="font-mono text-[12px] text-dim">ACCEPT_INTENT</div>
               <Label>Your offer ({buyT?.symbol})</Label>
@@ -166,7 +182,12 @@ export default function IntentDetail() {
                 inputMode="numeric"
                 placeholder="amount you pay"
               />
-              <p className="mt-1 font-mono text-[10px] text-faint">Settles only if it clears the hidden reserve (Strategy B).</p>
+              <p className="mt-1 font-mono text-[10px] text-faint">
+                Settles only if it clears the hidden reserve (Strategy B). No {buyT?.symbol}?{" "}
+                <Link href="/app/faucet" className="text-purple underline">
+                  Faucet →
+                </Link>
+              </p>
               {!terms && (
                 <p className="mt-2 font-mono text-[10px] text-yellow">
                   ⚠ Decrypt the terms (left) first to confirm the size you&apos;ll receive before paying.
@@ -190,7 +211,7 @@ export default function IntentDetail() {
           )}
 
           {/* Taker: RFQ sealed bid */}
-          {open && !expired && !mine && it.mode === 1 && (
+          {open && !expired && !mine && canTake && it.mode === 1 && (
             <Panel>
               <div className="font-mono text-[12px] text-dim">SUBMIT_SEALED_BID</div>
               {alreadyBid ? (
@@ -234,7 +255,7 @@ export default function IntentDetail() {
             <Panel>
               <div className="flex items-center justify-between">
                 <div className="font-mono text-[12px] text-dim">MANAGE_AUCTION</div>
-                <span className="font-mono text-[12px] text-yellow">{bids}/10 bids</span>
+                <span className="font-mono text-[12px] text-yellow">{bids}/5 bids</span>
               </div>
               <Button
                 variant="yellow"

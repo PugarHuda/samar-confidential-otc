@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, usePublicClient, useWalletClient, useWriteContract } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient, useWriteContract, useChainId, useSwitchChain } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { isAddress } from "viem";
 import { MsIcon, Panel, Button, Label } from "@/components/ui";
 import { CUSDC, OPERATOR_UNTIL, tokenAbi, factoryAddress, createCampaign, authorize, claim, decryptBalance, type ClaimPayload } from "@/lib/tokenops";
+
+const SEPOLIA_CHAIN_ID = 11155111;
+const posInt = (s: string, label: string): number => {
+  const n = Number(s);
+  if (!Number.isInteger(n) || n <= 0) throw new Error(`${label} must be a whole number greater than 0`);
+  return n;
+};
 
 const WINDOWS: [string, number][] = [
   ["1H", 3600],
@@ -18,6 +26,9 @@ export default function Home() {
   const pub = usePublicClient();
   const { data: wallet } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
+  const wrongNet = isConnected && chainId !== SEPOLIA_CHAIN_ID;
 
   const [poolAmt, setPoolAmt] = useState("1000");
   const [win, setWin] = useState(86400);
@@ -58,23 +69,30 @@ export default function Home() {
   });
 
   const create = run("create", async () => {
-    say(`Deploying + funding a campaign with an encrypted pool of ${poolAmt}…`);
-    const { airdrop: a } = await createCampaign(pub, wallet, address!, Number(poolAmt), win);
+    const pool = posInt(poolAmt, "Pool amount");
+    say(`Deploying + funding a campaign with an encrypted pool of ${pool}…`);
+    const { airdrop: a } = await createCampaign(pub, wallet, address!, pool, win);
     setAirdrop(a);
     say(`Campaign live: ${a}`);
   });
 
   const issue = run("issue", async () => {
     if (!airdrop) throw new Error("create a campaign first");
-    if (recip.length !== 42) throw new Error("enter a recipient 0x address");
-    say(`Encrypting ${allocAmt} for ${recip.slice(0, 8)}… + signing authorization`);
-    const p = await authorize(pub, wallet, airdrop as `0x${string}`, recip as `0x${string}`, Number(allocAmt));
+    if (!isAddress(recip)) throw new Error("enter a valid recipient 0x address");
+    const alloc = posInt(allocAmt, "Allocation");
+    say(`Encrypting ${alloc} for ${recip.slice(0, 8)}… + signing authorization`);
+    const p = await authorize(pub, wallet, airdrop as `0x${string}`, recip as `0x${string}`, alloc);
     setPayload(JSON.stringify(p));
     say("Claim authorization ready — send the payload below to the recipient.");
   });
 
   const doClaim = run("claim", async () => {
-    const p = JSON.parse(claimInput) as ClaimPayload;
+    let p: ClaimPayload;
+    try {
+      p = JSON.parse(claimInput) as ClaimPayload;
+    } catch {
+      throw new Error("invalid claim payload — paste the full JSON you were given");
+    }
     say("Claiming your confidential allocation…");
     const hash = await claim(pub, wallet, p);
     await waitTx(hash);
@@ -108,6 +126,15 @@ export default function Home() {
           <span className="font-mono text-dim"> scripts/smoke.mjs</span>).
         </p>
 
+        {wrongNet && (
+          <Panel className="mt-6 flex items-center justify-between border-coral/30 py-3">
+            <span className="text-sm text-coral">⚠ Wrong network — this app runs on Sepolia.</span>
+            <Button variant="ghost" onClick={() => switchChain({ chainId: SEPOLIA_CHAIN_ID })}>
+              Switch to Sepolia
+            </Button>
+          </Panel>
+        )}
+
         {!isConnected && (
           <Panel className="mt-6 flex flex-col items-center gap-3 py-10 text-center">
             <MsIcon name="lock" size={28} className="text-purple" />
@@ -121,7 +148,7 @@ export default function Home() {
             <Panel>
               <div className="font-mono text-[12px] text-dim">ADMIN · 01 · PREPARE</div>
               <p className="mt-1 text-sm text-muted">Mint demo cUSDC and authorize the airdrop factory to fund campaigns.</p>
-              <Button className="mt-3" variant="ghost" disabled={!!busy} onClick={prep}>
+              <Button className="mt-3" variant="ghost" disabled={!!busy || wrongNet} onClick={prep}>
                 {busy === "prep" ? "Preparing…" : "Mint cUSDC + authorize"}
               </Button>
             </Panel>
@@ -147,7 +174,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-                <Button variant="primary" disabled={!!busy} onClick={create}>
+                <Button variant="primary" disabled={!!busy || wrongNet} onClick={create}>
                   {busy === "create" ? "Deploying…" : "Create + fund"}
                 </Button>
               </div>
@@ -159,7 +186,7 @@ export default function Home() {
               <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_120px_auto]">
                 <input className={field} placeholder="recipient 0x…" value={recip} onChange={(e) => setRecip(e.target.value)} />
                 <input className={field} placeholder="amount" value={allocAmt} onChange={(e) => setAllocAmt(e.target.value)} inputMode="numeric" />
-                <Button variant="yellow" disabled={!!busy || !airdrop} onClick={issue}>
+                <Button variant="yellow" disabled={!!busy || wrongNet || !airdrop} onClick={issue}>
                   {busy === "issue" ? "Signing…" : "Encrypt + sign"}
                 </Button>
               </div>
@@ -174,7 +201,10 @@ export default function Home() {
             <Panel className="border-yellow/20">
               <div className="font-mono text-[12px] text-dim">RECIPIENT · CLAIM</div>
               <p className="mt-1 text-sm text-muted">
-                Paste a claim payload and receive your confidential allocation. Needs a little Sepolia ETH for the claim fee.
+                Paste a claim payload and receive your confidential allocation. Needs a little Sepolia ETH for the claim fee —{" "}
+                <a className="text-purple underline" href="https://sepoliafaucet.com" target="_blank">
+                  faucet →
+                </a>
               </p>
               <textarea
                 className={`${field} mt-3 h-24 font-mono text-[11px]`}
@@ -183,10 +213,10 @@ export default function Home() {
                 onChange={(e) => setClaimInput(e.target.value)}
               />
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button variant="primary" disabled={!!busy || !claimInput} onClick={doClaim}>
+                <Button variant="primary" disabled={!!busy || wrongNet || !claimInput} onClick={doClaim}>
                   {busy === "claim" ? "Claiming…" : "Claim"}
                 </Button>
-                <Button variant="ghost" disabled={!!busy} onClick={decrypt}>
+                <Button variant="ghost" disabled={!!busy || wrongNet} onClick={decrypt}>
                   {busy === "decrypt" ? "Decrypting…" : myBal !== null ? `Balance: ${myBal} cUSDC` : "Decrypt my balance"}
                 </Button>
               </div>

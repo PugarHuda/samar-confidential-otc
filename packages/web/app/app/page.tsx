@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { tokenByAddress, shortAddr, intentId } from "@/lib/config";
+import { tokenByAddress, shortAddr, intentId, zeroAddressIsOpen } from "@/lib/config";
 import { useSamar, type IntentRow } from "@/lib/hooks";
 import { Gate } from "@/components/Gate";
 import { Panel, MsIcon, StatusPill, ModePill, TokenChip, Cipher, Segmented } from "@/components/ui";
@@ -13,6 +13,7 @@ export default function ActiveIntents() {
   const s = useSamar();
   const [rows, setRows] = useState<IntentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadErr, setLoadErr] = useState(false);
   const [mode, setMode] = useState<number | -1>(-1);
   const [status, setStatus] = useState<number | -1>(-1);
   const [mineOnly, setMineOnly] = useState(false);
@@ -21,10 +22,12 @@ export default function ActiveIntents() {
 
   async function load() {
     setLoading(true);
+    setLoadErr(false);
     try {
       setRows(await s.loadIntents());
     } catch {
       setRows([]);
+      setLoadErr(true); // distinguish a read failure from a genuinely empty book
     } finally {
       setLoading(false);
     }
@@ -43,10 +46,13 @@ export default function ActiveIntents() {
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const view = filtered.slice(page * PAGE, page * PAGE + PAGE);
 
+  const lockedToOther = (r: IntentRow) =>
+    !zeroAddressIsOpen(r.allowedTaker) && r.allowedTaker.toLowerCase() !== s.address?.toLowerCase();
+
   function action(r: IntentRow) {
     const mine = r.maker.toLowerCase() === s.address?.toLowerCase();
     if (mine) return "Manage";
-    if (r.status === 0) return "Accept";
+    if (r.status === 0) return lockedToOther(r) ? "View" : "Accept";
     return "View";
   }
 
@@ -114,7 +120,15 @@ export default function ActiveIntents() {
           </div>
 
           {loading && <div className="px-4 py-10 text-center font-mono text-[12px] text-muted">loading…</div>}
-          {!loading && view.length === 0 && (
+          {!loading && loadErr && (
+            <div className="px-4 py-10 text-center font-mono text-[12px] text-coral">
+              couldn&apos;t load the orderbook (RPC hiccup) ·{" "}
+              <button onClick={load} className="underline hover:text-txt">
+                retry
+              </button>
+            </div>
+          )}
+          {!loading && !loadErr && view.length === 0 && (
             <div className="px-4 py-10 text-center font-mono text-[12px] text-muted">no intents · create one →</div>
           )}
 
@@ -141,7 +155,17 @@ export default function ActiveIntents() {
                   <MsIcon name="lock" size={14} className="text-faint" />
                   <Cipher />
                 </div>
-                <div>{expired ? <StatusPill status={4} /> : <StatusPill status={r.status} />}</div>
+                <div className="flex items-center gap-1.5">
+                  {expired ? <StatusPill status={4} /> : <StatusPill status={r.status} />}
+                  {lockedToOther(r) && (
+                    <span
+                      title={`locked to ${shortAddr(r.allowedTaker)} — permissioned`}
+                      className="flex items-center gap-0.5 rounded bg-panel2 px-1.5 py-0.5 font-mono text-[9px] text-yellow"
+                    >
+                      <MsIcon name="lock" size={11} /> locked
+                    </span>
+                  )}
+                </div>
                 <div>
                   <Link href={`/app/intents/${r.id}`} className="rounded-md bg-panel2 px-3 py-1.5 font-mono text-[12px] text-purple hover:bg-purple/10">
                     {action(r)}

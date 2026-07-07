@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
   appName: "Samar",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || "SAMAR_DEMO_PROJECT_ID",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || "a0197aa49d08f0b2e34186c8a67c733c",
   chains: [sepolia],
   transports: {
     [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC || "https://ethereum-sepolia-rpc.publicnode.com"),

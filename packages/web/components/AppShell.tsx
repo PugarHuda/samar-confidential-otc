@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mb-2 px-2 font-mono text-[11px] uppercase tracking-wider text-faint">Navigation</div>
           <NavLinks pathname={pathname} />
           <div className="mt-8 flex flex-col gap-1">
-            <a href="https://docs.zama.org" target="_blank" className="flex items-center gap-2 px-3 py-2 font-mono text-[12px] text-faint hover:text-muted">
+            <a href="https://docs.zama.ai/protocol" target="_blank" className="flex items-center gap-2 px-3 py-2 font-mono text-[12px] text-faint hover:text-muted">
               <MsIcon name="description" size={16} /> Docs
             </a>
             <a

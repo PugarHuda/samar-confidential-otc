@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAccount, usePublicClient, useWalletClient, useWriteContract, useChainId, useSwitchChain } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { formatUnits } from "viem";
-import { REGISTRY, SEPOLIA_CHAIN_ID, OPERATOR_UNTIL, registryAbi, wrapperAbi, erc20Abi, shortAddr, type Pair } from "@/lib/registry";
+import { REGISTRY, SEPOLIA_CHAIN_ID, registryAbi, wrapperAbi, erc20Abi, shortAddr, type Pair } from "@/lib/registry";
 import { shield, unshield, decryptBalance } from "@/lib/unshield";
 import { MsIcon, Panel, Button, Cipher } from "@/components/ui";
 
@@ -147,7 +147,10 @@ export default function Home() {
           <a className="text-purple" href={`https://sepolia.etherscan.io/address/${REGISTRY}`} target="_blank">
             {shortAddr(REGISTRY)}
           </a>
-          . Mint test tokens, wrap them into confidential balances, decrypt yours, unwrap back.
+          . Mint test tokens, wrap them into confidential balances, decrypt yours, unwrap back.{" "}
+          <a className="text-purple" href="https://sepoliafaucet.com" target="_blank">
+            Need Sepolia ETH for gas? →
+          </a>
         </p>
 
         {wrongNet && (
