@@ -76,7 +76,7 @@ Escrow nets to zero on every path. A rejection is indistinguishable from a fill 
 │   │   ├── contracts/
 │   │   │   ├── PrivateOTC.sol      # the OTC desk (Direct + RFQ Vickrey)
 │   │   │   └── SamarCToken.sol     # ERC-7984 demo token (deploy as cUSDC + cETH)
-│   │   ├── test/PrivateOTC.ts      # 13 settlement tests with real balance assertions
+│   │   ├── test/PrivateOTC.ts      # 20 settlement tests with real balance assertions
 │   │   └── scripts/                # deploy, e2e-settle / e2e (live proofs), stress-rfq
 │   ├── web/                # Samar OTC desk — Next.js App Router + wagmi/RainbowKit + relayer-sdk 0.4
 │   │   ├── app/            # landing (/) + dark app (/app/*)

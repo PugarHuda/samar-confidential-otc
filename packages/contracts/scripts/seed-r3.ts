@@ -11,11 +11,9 @@ const OTC = "0x7bde6aC99D3Df939941232159b2E675ACBD5A932";
 const UNTIL = 2_000_000_000;
 const EXPIRES = 2_000_000_000;
 const HEX = (h: any) => (typeof h === "string" ? (h.startsWith("0x") ? h : "0x" + h) : ethers.hexlify(h));
-// fixed testnet throwaway bidders — reused every run
-const BIDDER_KEYS = [
-  "0xbf1532891c8ff9e01010cfff015f845521b56018163fa444463a6d7dfcd6c8fe",
-  "0x64c809809743d01bde827eddeb09e728bd823093c268dbde75c3f9077c2e326b",
-];
+// Optional FIXED bidder keys (testnet only) so reruns reuse the same wallets and can resume a crashed
+// run. Set SEED_KEY_1 / SEED_KEY_2 in the environment. Never hardcode keys in the repo — if unset we
+// fall back to fresh random wallets (resume-across-runs then no longer works, which is fine post-seed).
 
 let instance: any;
 
@@ -56,8 +54,8 @@ async function main() {
   const provider = ethers.provider;
   instance = await retry("instance", () => createInstance({ ...SepoliaConfig, network: process.env.SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com" }));
   const otcM = await ethers.getContractAt("PrivateOTC", OTC, maker);
-  const B = new ethers.Wallet(BIDDER_KEYS[0], provider);
-  const C = new ethers.Wallet(BIDDER_KEYS[1], provider);
+  const B = process.env.SEED_KEY_1 ? new ethers.Wallet(process.env.SEED_KEY_1, provider) : ethers.Wallet.createRandom().connect(provider);
+  const C = process.env.SEED_KEY_2 ? new ethers.Wallet(process.env.SEED_KEY_2, provider) : ethers.Wallet.createRandom().connect(provider);
 
   // top up bidder gas only when low
   for (const w of [B, C]) {
