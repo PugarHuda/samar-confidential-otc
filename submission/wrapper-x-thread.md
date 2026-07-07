@@ -47,8 +47,8 @@ Wrap is instant; unwrap requests a Gateway finalization that returns your ERC-20
 **6/**
 Try it — every confidential wrapper on Sepolia, in one dashboard:
 
-🔗 [demo]
-💻 [repo]
-🎥 [video]
+🔗 Demo: https://samar-wrapper.vercel.app
+💻 Code: https://github.com/PugarHuda/samar-confidential-otc
+🎥 [video link]
 
 Built for the @zama_fhe Developer Program (Bounty Track). The on-ramp for confidential tokens.

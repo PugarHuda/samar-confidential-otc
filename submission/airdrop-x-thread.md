@@ -30,8 +30,8 @@ Built on the **TokenOps SDK** (`@tokenops/sdk/fhe-airdrop`) + `@zama-fhe/sdk` + 
 
 **6/**
 Confidential token distribution, done right:
-🔗 [demo]
-💻 [repo]
-🎥 [video]
+🔗 Demo: https://samar-airdrop.vercel.app
+💻 Code: https://github.com/PugarHuda/samar-confidential-otc
+🎥 [video link]
 
 Built for the @zama_fhe Developer Program (Special Bounty · TokenOps). Airdrops nobody can snoop.

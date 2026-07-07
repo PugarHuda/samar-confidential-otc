@@ -1,8 +1,8 @@
 {
-  "name": "cipherdesk-contracts",
+  "name": "samar-contracts",
   "version": "0.1.0",
   "private": true,
-  "description": "CipherDesk — confidential OTC desk on Zama fhEVM (escrow + all-or-nothing FHE settlement)",
+  "description": "Samar — confidential OTC desk on Zama fhEVM (escrow + all-or-nothing FHE settlement)",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
