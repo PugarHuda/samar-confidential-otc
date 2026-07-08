@@ -99,13 +99,13 @@ contract PrivateOTC is ZamaEthereumConfig {
         euint64 sellAmount = FHE.fromExternal(encSell, proof);
         euint64 minBuyAmount = FHE.fromExternal(encMinBuy, proof);
 
-        // Escrow the sell asset; store the *actual* amount moved.
+        // Escrow the sell asset; store the *actual* amount moved. The token's _update already grants
+        // persistent ACL on `escrowed` to both `from` (maker) and `to` (this), so we don't re-grant it —
+        // only `minBuyAmount` (from FHE.fromExternal) needs explicit grants.
         FHE.allowTransient(sellAmount, sellToken);
         euint64 escrowed = IERC7984(sellToken).confidentialTransferFrom(msg.sender, address(this), sellAmount);
 
-        FHE.allowThis(escrowed);
         FHE.allowThis(minBuyAmount);
-        FHE.allow(escrowed, msg.sender);
         FHE.allow(minBuyAmount, msg.sender);
 
         id = nextId++;
@@ -194,10 +194,8 @@ contract PrivateOTC is ZamaEthereumConfig {
 
         euint64 bid = FHE.fromExternal(encBid, proof);
         FHE.allowTransient(bid, it.buyToken);
+        // _update already grants persistent ACL on `escrowed` to the bidder (from) and this (to).
         euint64 escrowed = IERC7984(it.buyToken).confidentialTransferFrom(msg.sender, address(this), bid);
-
-        FHE.allowThis(escrowed);
-        FHE.allow(escrowed, msg.sender);
 
         _bids[id].push(Bid(msg.sender, escrowed));
         _hasBid[id][msg.sender] = true;
@@ -216,17 +214,25 @@ contract PrivateOTC is ZamaEthereumConfig {
 
         it.status = Status.Filled;
         Bid[] storage bids = _bids[id];
+        uint256 n = bids.length;
+        // cache storage reads used across the loop (warm SLOADs → locals)
+        address maker = it.maker;
+        address sellToken = it.sellToken;
+        euint64 sellAmount = it.sellAmount;
 
-        if (bids.length == 0) {
-            _payout(it.sellToken, it.maker, it.sellAmount); // no bids — return escrow
+        if (n == 0) {
+            _payout(sellToken, maker, sellAmount); // no bids — return escrow
             emit AuctionFinalized(id);
             return;
         }
 
+        address buyToken = it.buyToken;
+        euint64 zero = FHE.asEuint64(0); // one trivial-encrypt reused everywhere below
+
         // Encrypted first- and second-highest bid.
-        euint64 highest = FHE.asEuint64(0);
-        euint64 second = FHE.asEuint64(0);
-        for (uint256 i = 0; i < bids.length; i++) {
+        euint64 highest = zero;
+        euint64 second = zero;
+        for (uint256 i = 0; i < n; i++) {
             euint64 cand = bids[i].amount;
             ebool newHigh = FHE.gt(cand, highest);
             second = FHE.select(newHigh, highest, second); // old highest drops to second
@@ -240,7 +246,6 @@ contract PrivateOTC is ZamaEthereumConfig {
         euint64 reserve = it.minBuyAmount;
         ebool sold = FHE.ge(highest, reserve);
         euint64 price = FHE.max(second, reserve);
-        euint64 zero = FHE.asEuint64(0);
 
         // Per-bidder conditional settlement. Exactly one winner: the FIRST bid equal to `highest`
         // (the `awarded` flag breaks ties, so a top-tie never double-pays the asset), and only when sold.
@@ -250,19 +255,22 @@ contract PrivateOTC is ZamaEthereumConfig {
         // address (bid order is public via BidSubmitted). A single aggregated transfer hides the winner.
         ebool awarded = FHE.asEbool(false);
         euint64 makerProceeds = zero;
-        for (uint256 i = 0; i < bids.length; i++) {
+        for (uint256 i = 0; i < n; i++) {
             euint64 bid = bids[i].amount;
+            address bidder = bids[i].bidder;
             ebool isWinner = FHE.and(FHE.and(FHE.eq(bid, highest), FHE.not(awarded)), sold);
             awarded = FHE.or(awarded, isWinner);
 
-            _payout(it.sellToken, bids[i].bidder, FHE.select(isWinner, it.sellAmount, zero)); // winner gets the asset
-            _payout(it.buyToken, bids[i].bidder, FHE.select(isWinner, FHE.sub(bid, price), bid)); // winner overpay back; loser full
-            makerProceeds = FHE.add(makerProceeds, FHE.select(isWinner, price, zero)); // clearing price, credited once below
+            // makerCut = winner ? price : 0 — computed once and reused for both the refund and the maker leg.
+            euint64 makerCut = FHE.select(isWinner, price, zero);
+            _payout(sellToken, bidder, FHE.select(isWinner, sellAmount, zero)); // winner gets the asset
+            _payout(buyToken, bidder, FHE.sub(bid, makerCut)); // winner: bid - price; loser: bid - 0 = full refund
+            makerProceeds = FHE.add(makerProceeds, makerCut);
         }
 
-        _payout(it.buyToken, it.maker, makerProceeds); // single transfer — winner row is not observable to the maker
+        _payout(buyToken, maker, makerProceeds); // single transfer — winner row is not observable to the maker
         // No bid cleared the reserve — return the escrowed asset to the maker.
-        _payout(it.sellToken, it.maker, FHE.select(sold, zero, it.sellAmount));
+        _payout(sellToken, maker, FHE.select(sold, zero, sellAmount));
         emit AuctionFinalized(id);
     }
 

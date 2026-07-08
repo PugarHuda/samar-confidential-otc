@@ -114,6 +114,16 @@ describe("PrivateOTC", function () {
       expect(await fhevm.userDecryptEuint(FhevmType.euint64, minBuyH, otcAddr, taker)).to.equal(9000n);
     });
 
+    it("maker can decrypt their OWN escrowed sell amount without grantView (ACL comes from the token)", async () => {
+      await eth.connect(maker).mint(5);
+      await eth.connect(maker).setOperator(otcAddr, UNTIL);
+      await createIntent(5, 9000);
+      // no grantView — the maker's ACL on the escrowed handle is granted by the token's _update,
+      // which is why createIntent no longer re-grants it. If that grant were missing this reverts.
+      const sellH = await otc.getSellAmount(0);
+      expect(await fhevm.userDecryptEuint(FhevmType.euint64, sellH, otcAddr, maker)).to.equal(5n);
+    });
+
     it("allowedTaker locks the intent to one counterparty", async () => {
       await eth.connect(maker).mint(5);
       await usdc.connect(other).mint(10000);
