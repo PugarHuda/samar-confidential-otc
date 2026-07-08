@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://samar-wrapper.vercel.app"),
   title: "Confidential Wrapper Registry",
   description: DESCRIPTION,
-  openGraph: { title: "Confidential Wrapper Registry", description: DESCRIPTION, siteName: "Confidential Wrapper Registry", type: "website" },
+  openGraph: { title: "Confidential Wrapper Registry", description: DESCRIPTION, url: "https://samar-wrapper.vercel.app", siteName: "Confidential Wrapper Registry", type: "website" },
   twitter: { card: "summary_large_image", title: "Confidential Wrapper Registry", description: DESCRIPTION },
 };
 

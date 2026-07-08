@@ -132,7 +132,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-page text-txt">
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-topbar px-4">
+      <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-line bg-topbar px-4 py-2">
         <div className="flex items-center gap-3">
           <span className="grid h-6 w-6 place-items-center rounded-md bg-purple text-page">
             <MsIcon name="lock" size={15} />

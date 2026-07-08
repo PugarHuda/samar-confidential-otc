@@ -150,8 +150,8 @@ export default function Landing() {
           />
           <StepCard
             n="02"
-            title="Grant access"
-            body="Scope a decryption grant to the exact counterparty. Nobody else can peek."
+            title="Grant access (optional)"
+            body="For a directed quote, scope a decryption grant to one counterparty. Nobody else can peek."
             note="FHE.allow"
           />
           <StepCard

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://samar-hub.vercel.app"),
   title: "Samar — a confidential-finance stack on Zama",
   description: DESCRIPTION,
-  openGraph: { title: "Samar — a confidential-finance stack on Zama", description: DESCRIPTION, siteName: "Samar", type: "website" },
+  openGraph: { title: "Samar — a confidential-finance stack on Zama", description: DESCRIPTION, url: "https://samar-hub.vercel.app", siteName: "Samar", type: "website" },
   twitter: { card: "summary_large_image", title: "Samar — a confidential-finance stack on Zama", description: DESCRIPTION },
 };
 

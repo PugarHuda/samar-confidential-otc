@@ -24,7 +24,7 @@ const config: Config = {
         txt: "#E7E4F2",
         dim: "#B7B2C9",
         muted: "#8B879C",
-        faint: "#57536A",
+        faint: "#7E7A93",
         faint2: "#6E6A82",
         // Tokens
         usdc: "#3E7BFA",

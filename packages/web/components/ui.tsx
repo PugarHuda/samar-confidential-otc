@@ -98,7 +98,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg px-4 py-2.5 font-display text-sm font-600 transition disabled:opacity-40 ${v} ${className}`}
+      className={`rounded-lg px-4 py-2.5 font-display text-sm font-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple disabled:opacity-40 ${v} ${className}`}
     >
       {children}
     </button>

@@ -161,7 +161,7 @@ export default function IntentDetail() {
           </dl>
 
           {!terms && (
-            <Button variant="ghost" className="mt-5" disabled={busy === "terms"} onClick={decryptTerms}>
+            <Button variant="ghost" className="mt-5" disabled={!!busy} onClick={decryptTerms}>
               {busy === "terms" ? "Decrypting…" : "Decrypt terms"}
             </Button>
           )}
@@ -211,7 +211,7 @@ export default function IntentDetail() {
               <Button
                 variant="primary"
                 className="mt-4 w-full"
-                disabled={busy === "accept" || !offer}
+                disabled={!!busy || !offer}
                 onClick={() => {
                   if (!validAmount(offer)) {
                     setErr("Offer must be a whole number between 1 and 1e15");
@@ -249,7 +249,7 @@ export default function IntentDetail() {
                   <Button
                     variant="yellow"
                     className="mt-4 w-full"
-                    disabled={busy === "bid" || !bidAmt}
+                    disabled={!!busy || !bidAmt}
                     onClick={() => {
                       if (!validAmount(bidAmt)) {
                         setErr("Bid must be a whole number between 1 and 1e15");
@@ -275,7 +275,7 @@ export default function IntentDetail() {
               <Button
                 variant="yellow"
                 className="mt-4 w-full"
-                disabled={busy === "finalize"}
+                disabled={!!busy}
                 onClick={run("finalize", () => s.finalizeAuction(id), "Auction settled — winner charged 2nd price.")}
               >
                 {busy === "finalize" ? "Finalizing…" : "Finalize auction"}
@@ -284,7 +284,7 @@ export default function IntentDetail() {
                 <Button
                   variant="ghost"
                   className="mt-2 w-full border-coral/30 text-coral"
-                  disabled={busy === "cancel"}
+                  disabled={!!busy}
                   onClick={run("cancel", () => s.cancel(id), "Cancelled — escrow reclaimed.")}
                 >
                   {busy === "cancel" ? "Cancelling…" : "Cancel & reclaim escrow"}
@@ -307,7 +307,7 @@ export default function IntentDetail() {
               <Button
                 variant="ghost"
                 className="mt-3 w-full"
-                disabled={busy === "grant" || viewer.length !== 42}
+                disabled={!!busy || viewer.length !== 42}
                 onClick={run("grant", () => s.grantView(id, viewer), "Access granted.")}
               >
                 {busy === "grant" ? "Granting…" : "Grant view (FHE.allow)"}
@@ -315,7 +315,7 @@ export default function IntentDetail() {
               <Button
                 variant="ghost"
                 className="mt-2 w-full border-coral/30 text-coral"
-                disabled={busy === "cancel"}
+                disabled={!!busy}
                 onClick={run("cancel", () => s.cancel(id), "Cancelled — escrow reclaimed.")}
               >
                 {busy === "cancel" ? "Cancelling…" : "Cancel & reclaim escrow"}
