@@ -2,7 +2,7 @@
 
 // All confidential ops for the wrapper via a single SDK — @zama-fhe/sdk v3.
 // unshield() runs the full unwrap→finalize; decryptBalance() user-decrypts a confidential balance.
-// Verified live: ../../packages/airdrop/scripts/smoke-unshield.mjs and smoke.mjs.
+// Verified live: ../scripts/smoke-unshield.mjs.
 import { createConfig } from "@zama-fhe/sdk/viem";
 import { web } from "@zama-fhe/sdk/web";
 import { sepolia } from "@zama-fhe/sdk/chains";

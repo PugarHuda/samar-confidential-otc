@@ -52,6 +52,11 @@ contract redesign, so they are documented rather than patched.
 6. **`maker` may finalize an RFQ before expiry.** A deliberate UX choice (the maker closes when satisfied);
    it remains fund-correct. If timed fairness matters, gate the maker branch on expiry too.
 
+7. **`SamarCToken.mint` faucet can be saturated (testnet griefing).** `mint` is unbounded; a single
+   `mint(type(uint64).max)` pushes total supply to the ceiling, after which the ERC-7984 base's
+   `tryIncrease` returns a silent no-op for everyone (mints credit 0, no revert). A griefer could brick a
+   faucet before judging. Testnet-only and easily re-deployed; a per-call/per-address cap fixes it.
+
 ## Not in scope
 Testnet only. `SamarCToken.mint` takes a public amount by design (faucet). Keys used in demo scripts are
 throwaway testnet keys.

@@ -24,7 +24,7 @@ Each step is **action → expect**. If any "expect" is wrong, screenshot it and 
 
 ## B. Wrapper — `samar-wrapper.vercel.app`
 
-7. Connect → expect the registry lists **9 pairs**. Pick USDC → **Faucet** → **Wrap** `100`.
+7. Connect → expect the registry lists its pairs (**9** at time of writing). Pick USDC → **Faucet** → **Wrap** `100`.
 8. Click **Decrypt** on the confidential balance → expect a real number, **no "Cannot convert… BigInt" crash**
    (this was a fixed bug). Optionally **Unwrap** → expect the Gateway finalization flow.
 

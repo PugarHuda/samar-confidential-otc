@@ -21,7 +21,7 @@ ERC-7984 fixes that with FHE — balances are encrypted on-chain. But to use it 
 ---
 
 **3/**
-This app reads the **official Zama Wrappers Registry** live and lists every ERC-20 ↔ ERC-7984 pair (9 today: USDC, USDT, WETH, XAUt, tGBP…).
+This app reads the **official Zama Wrappers Registry** live and lists every ERC-20 ↔ ERC-7984 pair the registry publishes (9 at time of writing: USDC, USDT, WETH, XAUt, tGBP…).
 
 For each: a faucet, one-click wrap, unwrap, and a decrypt button. No custom contracts — it talks straight to the deployed registry + wrappers.
 
