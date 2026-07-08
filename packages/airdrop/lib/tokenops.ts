@@ -94,6 +94,15 @@ export async function claim(publicClient: any, walletClient: any, p: ClaimPayloa
   return drop.claim({ encryptedInput: { handle: p.handle, inputProof: p.inputProof }, signature: p.signature, value: fee });
 }
 
+// Reject if the (flaky) relayer hasn't answered in time, so the UI shows a retry-able error
+// instead of a spinner that never resolves.
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out — relayer slow, try again`)), ms)),
+  ]);
+}
+
 /** Anyone: user-decrypt your own confidential cUSDC balance (only you can read it). */
 export async function decryptBalance(publicClient: any, walletClient: any, account: `0x${string}`): Promise<bigint> {
   const sdk = getSdk(publicClient, walletClient);
@@ -107,17 +116,21 @@ export async function decryptBalance(publicClient: any, walletClient: any, accou
   delete (types as any).EIP712Domain;
   const primaryType = eip.primaryType ?? Object.keys(types)[0];
   const signature = await walletClient.signTypedData({ account, domain: eip.domain, types, primaryType, message: eip.message });
-  const res = await sdk.relayer.userDecrypt({
-    encryptedValues: [handle],
-    contractAddress: CUSDC,
-    signedContractAddresses: [CUSDC],
-    privateKey,
-    publicKey,
-    signature,
-    signerAddress: account,
-    startTimestamp: start,
-    durationDays: days,
-  });
+  const res = await withTimeout<any>(
+    sdk.relayer.userDecrypt({
+      encryptedValues: [handle],
+      contractAddress: CUSDC,
+      signedContractAddresses: [CUSDC],
+      privateKey,
+      publicKey,
+      signature,
+      signerAddress: account,
+      startTimestamp: start,
+      durationDays: days,
+    }),
+    45_000,
+    "decrypt",
+  );
   const raw = res[handle] ?? res[handle.toLowerCase()];
   if (raw === undefined) throw new Error("relayer returned no plaintext for this balance handle");
   return BigInt(raw);

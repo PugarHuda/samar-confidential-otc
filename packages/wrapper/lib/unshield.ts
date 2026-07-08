@@ -36,6 +36,15 @@ export async function unshield(publicClient: any, walletClient: any, cToken: `0x
   return wt.unshield(amount);
 }
 
+// Reject if the (flaky) relayer hasn't answered in time, so the UI shows a retry-able error
+// instead of a spinner that never resolves.
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out — relayer slow, try again`)), ms)),
+  ]);
+}
+
 /** User-decrypt your own confidential balance of `cToken` (only you can read it). */
 export async function decryptBalance(publicClient: any, walletClient: any, cToken: `0x${string}`, account: `0x${string}`): Promise<bigint> {
   const sdk = getSdk(publicClient, walletClient);
@@ -49,17 +58,21 @@ export async function decryptBalance(publicClient: any, walletClient: any, cToke
   delete (types as any).EIP712Domain;
   const primaryType = eip.primaryType ?? Object.keys(types)[0];
   const signature = await walletClient.signTypedData({ account, domain: eip.domain, types, primaryType, message: eip.message });
-  const res = await sdk.relayer.userDecrypt({
-    encryptedValues: [handle],
-    contractAddress: cToken,
-    signedContractAddresses: [cToken],
-    privateKey,
-    publicKey,
-    signature,
-    signerAddress: account,
-    startTimestamp: start,
-    durationDays: days,
-  });
+  const res = await withTimeout<any>(
+    sdk.relayer.userDecrypt({
+      encryptedValues: [handle],
+      contractAddress: cToken,
+      signedContractAddresses: [cToken],
+      privateKey,
+      publicKey,
+      signature,
+      signerAddress: account,
+      startTimestamp: start,
+      durationDays: days,
+    }),
+    45_000,
+    "decrypt",
+  );
   const raw = res[handle] ?? res[handle.toLowerCase()]; // relayer may key by lowercased handle
   if (raw === undefined) throw new Error("relayer returned no plaintext for this balance handle");
   return BigInt(raw);

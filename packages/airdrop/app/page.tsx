@@ -40,14 +40,18 @@ export default function Home() {
   const [myBal, setMyBal] = useState<string | null>(null);
   const [busy, setBusy] = useState("");
   const [log, setLog] = useState("");
+  const [err, setErr] = useState("");
 
   const say = (m: string) => setLog((l) => `${new Date().toLocaleTimeString()}  ${m}\n${l}`);
   const run = (key: string, fn: () => Promise<void>) => async () => {
     setBusy(key);
+    setErr("");
     try {
       await fn();
     } catch (e: any) {
-      say("ERR " + (e.shortMessage ?? e.message ?? String(e)));
+      const m = e.shortMessage ?? e.message ?? String(e);
+      say("ERR " + m);
+      setErr(m);
     } finally {
       setBusy("");
     }
@@ -131,6 +135,15 @@ export default function Home() {
             <span className="text-sm text-coral">⚠ Wrong network — this app runs on Sepolia.</span>
             <Button variant="ghost" onClick={() => switchChain({ chainId: SEPOLIA_CHAIN_ID })}>
               Switch to Sepolia
+            </Button>
+          </Panel>
+        )}
+
+        {err && (
+          <Panel className="mt-6 flex items-center justify-between border-coral/30 py-3">
+            <span className="text-sm text-coral">⚠ {err}</span>
+            <Button variant="ghost" onClick={() => setErr("")}>
+              dismiss
             </Button>
           </Panel>
         )}

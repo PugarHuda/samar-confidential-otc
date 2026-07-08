@@ -23,6 +23,7 @@ export default function Home() {
   const [amt, setAmt] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
   const [log, setLog] = useState("");
+  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
   const say = (m: string) => setLog((l) => `${new Date().toLocaleTimeString()}  ${m}\n${l}`);
@@ -55,6 +56,7 @@ export default function Home() {
       setMeta(m);
     } catch (e: any) {
       say("ERR load " + (e.shortMessage ?? e.message));
+      setErr("Couldn't reach the registry — retry.");
     } finally {
       setLoading(false);
     }
@@ -66,10 +68,13 @@ export default function Home() {
 
   const run = (key: string, fn: () => Promise<void>) => async () => {
     setBusy(key);
+    setErr("");
     try {
       await fn();
     } catch (e: any) {
-      say("ERR " + (e.shortMessage ?? e.message));
+      const m = e.shortMessage ?? e.message;
+      say("ERR " + m);
+      setErr(m);
     } finally {
       setBusy("");
     }
@@ -157,6 +162,15 @@ export default function Home() {
           <Panel className="mt-6 flex items-center justify-between">
             <span className="text-coral">⚠ Wrong network — switch to Sepolia.</span>
             <Button onClick={() => switchChain({ chainId: SEPOLIA_CHAIN_ID })}>Switch</Button>
+          </Panel>
+        )}
+
+        {err && (
+          <Panel className="mt-4 flex items-center justify-between border-coral/30">
+            <span className="text-sm text-coral">⚠ {err}</span>
+            <Button variant="ghost" onClick={() => setErr("")}>
+              dismiss
+            </Button>
           </Panel>
         )}
 
