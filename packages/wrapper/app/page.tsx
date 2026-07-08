@@ -34,6 +34,7 @@ export default function Home() {
 
   async function loadPairs() {
     setLoading(true);
+    setErr(""); // clear any prior "couldn't reach registry" so a successful reload doesn't keep it stale
     try {
       const raw = (await pub!.readContract({ address: REGISTRY, abi: registryAbi, functionName: "getTokenConfidentialTokenPairs" })) as any[];
       const list: Pair[] = raw
@@ -72,7 +73,7 @@ export default function Home() {
     try {
       await fn();
     } catch (e: any) {
-      const m = e.shortMessage ?? e.message;
+      const m = e.shortMessage ?? e.message ?? String(e);
       say("ERR " + m);
       setErr(m);
     } finally {

@@ -26,25 +26,36 @@ export default function IntentDetail() {
   const [err, setErr] = useState("");
   const [loadErr, setLoadErr] = useState(false);
 
-  async function load() {
+  // `alive` lets the effect discard a superseded load (e.g. account switched mid-fetch) so a slow
+  // response can't overwrite fresh state with the previous account's bid status.
+  async function load(alive: () => boolean = () => true) {
     setLoading(true);
     setLoadErr(false);
     try {
       const rows = await s.loadIntents();
       const found = rows.find((r) => r.id === id) ?? null;
-      setIt(found);
+      let bc = 0;
+      let hb = false;
       if (found?.mode === 1) {
-        setBids(await s.bidCount(id));
-        setAlreadyBid(await s.hasBid(id));
+        bc = await s.bidCount(id);
+        hb = await s.hasBid(id);
       }
+      if (!alive()) return; // superseded → drop these stale results
+      setIt(found);
+      setBids(bc);
+      setAlreadyBid(hb);
     } catch {
-      setLoadErr(true); // an RPC failure is not the same as a missing intent
+      if (alive()) setLoadErr(true); // an RPC failure is not the same as a missing intent
     } finally {
-      setLoading(false);
+      if (alive()) setLoading(false);
     }
   }
   useEffect(() => {
-    load();
+    let alive = true;
+    load(() => alive);
+    return () => {
+      alive = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.address, id]);
 
@@ -83,7 +94,7 @@ export default function IntentDetail() {
           {loadErr ? (
             <>
               Couldn&apos;t load intent {intentId(id)} (RPC hiccup).{" "}
-              <button onClick={load} className="text-purple underline">
+              <button onClick={() => load()} className="text-purple underline">
                 retry
               </button>
             </>
@@ -211,7 +222,7 @@ export default function IntentDetail() {
               <Button
                 variant="primary"
                 className="mt-4 w-full"
-                disabled={!!busy || !offer}
+                disabled={!!busy || !offer || !s.address}
                 onClick={() => {
                   if (!validAmount(offer)) {
                     setErr("Offer must be a whole number between 1 and 1e15");
@@ -249,7 +260,7 @@ export default function IntentDetail() {
                   <Button
                     variant="yellow"
                     className="mt-4 w-full"
-                    disabled={!!busy || !bidAmt}
+                    disabled={!!busy || !bidAmt || !s.address}
                     onClick={() => {
                       if (!validAmount(bidAmt)) {
                         setErr("Bid must be a whole number between 1 and 1e15");
