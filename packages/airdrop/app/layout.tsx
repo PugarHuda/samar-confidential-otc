@@ -7,9 +7,16 @@ const fredoka = Fredoka({ subsets: ["latin"], weight: ["500", "600", "700"], var
 const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600", "700", "800"], variable: "--font-nunito" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-jetbrains" });
 
+const TITLE = "Confidential Airdrop — TokenOps × Zama";
+const DESCRIPTION =
+  "Distribute ERC-7984 tokens where every recipient's allocation stays encrypted. Built on the TokenOps SDK and Zama fhEVM.";
+
 export const metadata: Metadata = {
-  title: "Confidential Airdrop — TokenOps × Zama",
-  description: "Distribute ERC-7984 tokens where every recipient's allocation stays encrypted. Built on the TokenOps SDK and Zama fhEVM.",
+  metadataBase: new URL("https://samar-airdrop.vercel.app"),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "https://samar-airdrop.vercel.app", siteName: "Samar", type: "website" },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

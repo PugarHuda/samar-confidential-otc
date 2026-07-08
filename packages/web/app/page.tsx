@@ -158,7 +158,7 @@ export default function Landing() {
             n="03"
             title="Fill or bid"
             body="A taker matches your terms — Direct fill now, sealed bids later."
-            note="matchIntent"
+            note="acceptIntent · submitBid"
           />
           <StepCard
             n="04"
@@ -185,7 +185,7 @@ export default function Landing() {
             </div>
             <div className="space-y-3 p-5 font-mono text-sm">
               <ExplorerRow label="sellAmount" />
-              <ExplorerRow label="buyAmount" />
+              <ExplorerRow label="minBuyAmount" />
               <div className="pt-1 text-[13px] text-muted">
                 🔒 unreadable — even by validators
               </div>

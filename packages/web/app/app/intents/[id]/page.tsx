@@ -24,9 +24,11 @@ export default function IntentDetail() {
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [loadErr, setLoadErr] = useState(false);
 
   async function load() {
     setLoading(true);
+    setLoadErr(false);
     try {
       const rows = await s.loadIntents();
       const found = rows.find((r) => r.id === id) ?? null;
@@ -35,6 +37,8 @@ export default function IntentDetail() {
         setBids(await s.bidCount(id));
         setAlreadyBid(await s.hasBid(id));
       }
+    } catch {
+      setLoadErr(true); // an RPC failure is not the same as a missing intent
     } finally {
       setLoading(false);
     }
@@ -75,7 +79,18 @@ export default function IntentDetail() {
   if (!it)
     return (
       <Gate requireConnect={false}>
-        <Panel className="text-center">Intent {intentId(id)} not found.</Panel>
+        <Panel className="text-center">
+          {loadErr ? (
+            <>
+              Couldn&apos;t load intent {intentId(id)} (RPC hiccup).{" "}
+              <button onClick={load} className="text-purple underline">
+                retry
+              </button>
+            </>
+          ) : (
+            <>Intent {intentId(id)} not found.</>
+          )}
+        </Panel>
       </Gate>
     );
 

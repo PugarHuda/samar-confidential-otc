@@ -29,6 +29,15 @@ async function getInstance(): Promise<any> {
 const asHex = (h: unknown): Hex =>
   typeof h === "string" ? ((h.startsWith("0x") ? h : `0x${h}`) as Hex) : bytesToHex(h as Uint8Array);
 
+// The Zama relayer can hang; without this a stuck request leaves the UI spinning forever with no
+// escape. Reject after `ms` so the caller's finally clears its busy state and shows a retry-able error.
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out — relayer slow, try again`)), ms)),
+  ]);
+}
+
 /** Encrypt one or more uint64 values into a single input bundle (handles + one proof). */
 export async function encryptValues(
   contract: string,
@@ -38,7 +47,7 @@ export async function encryptValues(
   const inst = await getInstance();
   const input = inst.createEncryptedInput(contract, user);
   for (const v of values) input.add64(v);
-  const enc = await input.encrypt();
+  const enc = await withTimeout<any>(input.encrypt(), 60_000, "encrypt");
   return { handles: enc.handles.map(asHex), proof: asHex(enc.inputProof) };
 }
 
@@ -65,15 +74,21 @@ export async function userDecrypt(
     message: eip712.message,
   });
 
-  const res = await inst.userDecrypt(
-    [{ handle, contractAddress }],
-    privateKey,
-    publicKey,
-    signature.replace(/^0x/, ""),
-    contracts,
-    account,
-    start,
-    days,
+  const res = await withTimeout<any>(
+    inst.userDecrypt(
+      [{ handle, contractAddress }],
+      privateKey,
+      publicKey,
+      signature.replace(/^0x/, ""),
+      contracts,
+      account,
+      start,
+      days,
+    ),
+    45_000,
+    "decrypt",
   );
-  return BigInt(res[handle]);
+  const raw = res[handle] ?? res[handle.toLowerCase()]; // relayer may key the result by lowercased handle
+  if (raw === undefined) throw new Error("relayer returned no plaintext for this handle");
+  return BigInt(raw);
 }
