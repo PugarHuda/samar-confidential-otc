@@ -29,11 +29,11 @@ Samar is a confidential OTC desk built on Zama fhEVM. Order amounts and the make
 **Stack:** Solidity + `@fhevm/solidity` (euint64, FHE.select), OpenZeppelin ERC-7984 confidential tokens, Next.js + wagmi + Zama Relayer SDK.
 
 **Deployed & Etherscan-verified (Sepolia):**
-- PrivateOTC: `0x7bde6aC99D3Df939941232159b2E675ACBD5A932`
+- PrivateOTC: `0x1F44777bDfab49fC2D616C29813142b98b91cd78`
 - cUSDC: `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e`
 - cETH: `0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c`
 
-**Verify live:** `packages/contracts/scripts/e2e-settle.ts` runs a full Direct settle + RFQ Vickrey second-price on Sepolia. 20/20 contract tests pass.
+**Verify live:** `packages/contracts/scripts/e2e-settle.ts` runs a full Direct settle + RFQ Vickrey second-price on Sepolia. 21/21 contract tests pass.
 
 ---
 

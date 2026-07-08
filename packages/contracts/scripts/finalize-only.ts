@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 // Finalize an already-populated RFQ intent with an explicit gasLimit (skips estimateGas, so the
 // fhevm hardhat plugin doesn't try to simulate). Reveals the real on-chain HCU outcome.
 // Usage: ID=2 GAS=20000000 npx hardhat run scripts/finalize-only.ts --network sepolia
-const OTC = "0x7bde6aC99D3Df939941232159b2E675ACBD5A932";
+const OTC = "0x1F44777bDfab49fC2D616C29813142b98b91cd78";
 const ID = BigInt(process.env.ID || "2");
 const GAS = BigInt(process.env.GAS || "20000000");
 

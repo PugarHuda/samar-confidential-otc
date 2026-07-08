@@ -29,7 +29,7 @@ and where it doesn't (liveness/griefing trade-offs of the privacy design): `subm
 ## Deployed contracts (Samar, Sepolia)
 | Contract | Address |
 |---|---|
-| PrivateOTC | `0x7bde6aC99D3Df939941232159b2E675ACBD5A932` |
+| PrivateOTC | `0x1F44777bDfab49fC2D616C29813142b98b91cd78` |
 | cUSDC (SamarCToken) | `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e` |
 | cETH (SamarCToken) | `0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c` |
 

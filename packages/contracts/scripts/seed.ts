@@ -7,7 +7,7 @@ import { createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/node";
 
 const CUSDC = "0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e";
 const CETH = "0x0700c9300D5cfD8A4b2C7fBbaB2703087AB0590c";
-const OTC = "0x7bde6aC99D3Df939941232159b2E675ACBD5A932";
+const OTC = "0x1F44777bDfab49fC2D616C29813142b98b91cd78";
 const UNTIL = 2_000_000_000;
 const EXPIRES = 2_000_000_000;
 const HEX = (h: any) => (typeof h === "string" ? (h.startsWith("0x") ? h : "0x" + h) : ethers.hexlify(h));
