@@ -351,9 +351,8 @@ function DrawPanel({ st, due, onDone }: { st: PoolStatus | null; due: boolean; o
           <div
             key={s.n}
             className={`rounded-lg border px-4 py-3 ${
-              active === i + (active === 0 && i === 0 ? 0 : 0) && active !== 0 && i === active - 1
-                ? "border-yellow/50 bg-yellow/5"
-                : "border-line2 bg-panel2"
+              // AwaitingSeed (1) → phase 2 pending; Selecting (2) → phase 3 pending
+              (active === 1 && i === 1) || (active === 2 && i === 2) ? "border-yellow/50 bg-yellow/5" : "border-line2 bg-panel2"
             }`}
           >
             <div className="font-mono text-[11px] text-muted">phase {s.n}</div>

@@ -20,14 +20,17 @@ jobs:
     defaults:
       run:
         working-directory: packages/contracts
+    env:
+      PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+      POOL_ADDRESS: "0xe7bFfFF46fAc9FBA8e2cF4265C65c16BAD47EA69"
+      YIELD_ADDRESS: "0x3a604f4eBB6F6057bB3200d1ac010fA3224bdbf5"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci
-      - run: npx hardhat run scripts/keeper-pool.ts --network sepolia
-        env:
-          PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
-          POOL_ADDRESS: "0xe7bFfFF46fAc9FBA8e2cF4265C65c16BAD47EA69"
-          YIELD_ADDRESS: "0x3a604f4eBB6F6057bB3200d1ac010fA3224bdbf5"
+      - name: crank (skips cleanly if KEEPER_PRIVATE_KEY secret is unset)
+        run: |
+          if [ -z "$PRIVATE_KEY" ]; then echo "KEEPER_PRIVATE_KEY not set — skipping"; exit 0; fi
+          npm ci
+          npx hardhat run scripts/keeper-pool.ts --network sepolia
