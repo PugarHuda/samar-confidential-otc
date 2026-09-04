@@ -6,6 +6,14 @@ const Ms = ({ n, s = 20, c = "" }: { n: string; s?: number; c?: string }) => (
 
 const APPS = [
   {
+    icon: "savings",
+    name: "Samar Saving",
+    track: "S4 Bounty",
+    href: "https://samar-pool.vercel.app",
+    tag: "Save & win",
+    body: "Confidential PoolTogether: no-loss prize savings where deposits, odds and even the winners stay encrypted — draws run on-chain with FHE randomness, provably fair.",
+  },
+  {
     icon: "swap_horiz",
     name: "Samar OTC",
     track: "Builder",
@@ -53,8 +61,8 @@ export default function Home() {
             On-chain finance where the numbers stay <span className="text-purple">encrypted</span>.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-dim">
-            Three apps, one idea. Trade, wrap, and distribute tokens on a public chain — while size, price, and balances stay
-            unreadable to bots, counterparties, and validators alike. Built on Zama fhEVM and ERC-7984.
+            Four apps, one idea. Save, trade, wrap, and distribute tokens on a public chain — while size, price, balances, and
+            even lottery winners stay unreadable to bots, counterparties, and validators alike. Built on Zama fhEVM and ERC-7984.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             {APPS.map((a) => (
@@ -65,7 +73,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="grid gap-4 pb-6 md:grid-cols-3">
+        <section className="grid gap-4 pb-6 md:grid-cols-2">
           {APPS.map((a) => (
             <a key={a.name} href={a.href} target="_blank" className="group rounded-panel border border-line bg-panel p-6 transition hover:border-purple/50">
               <div className="flex items-center justify-between">
@@ -86,11 +94,12 @@ export default function Home() {
 
         <section className="my-10 rounded-panel border border-line bg-panel2 p-8">
           <div className="font-mono text-[12px] uppercase tracking-wider text-purple">One composable stack</div>
-          <h2 className="mt-2 font-display text-2xl font-700">Wrap → Trade → Distribute — all confidential</h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <h2 className="mt-2 font-display text-2xl font-700">Wrap → Trade → Save → Distribute — all confidential</h2>
+          <div className="mt-6 grid gap-3 sm:grid-cols-4">
             {[
               ["Wrapper", "Turn any ERC-20 into a confidential ERC-7984 balance."],
               ["Samar OTC", "Trade those confidential tokens privately, size & price hidden."],
+              ["Samar Saving", "Save them in a no-loss prize pool — encrypted odds, winner-blind draws."],
               ["Airdrop", "Distribute them with encrypted, per-recipient allocations."],
             ].map(([t, d], i) => (
               <div key={t} className="rounded-lg border border-line bg-panel p-4">
