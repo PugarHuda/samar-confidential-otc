@@ -72,3 +72,22 @@ Every airdrop today leaks who got how much — inviting sybil farming, MEV, and 
 **Stack:** `@tokenops/sdk/fhe-airdrop` + `@zama-fhe/sdk` v3 + ERC-7984, on Sepolia. A thin encryptor adapter bridges the TokenOps `{handles, inputProof}` shape to the Zama SDK v3 `{encryptedValues, inputProof}` output (`packages/airdrop/lib/tokenops.ts`).
 
 **Verify live:** `packages/airdrop/scripts/smoke.mjs` runs the full create + fund → authorize → claim → decrypt flow with a real claim tx on Sepolia.
+
+---
+
+## Submission 4 — Samar Saving (Season 4 Bounty, $5k — Confidential PoolTogether)
+
+**Project name:** Samar Saving — Confidential Prize Savings
+
+**Tagline:** The no-loss lottery, rebuilt on FHE: deposits, balances, odds and even the winners stay encrypted — while every draw is provably fair on-chain.
+
+**Demo URL:** https://samar-pool.vercel.app
+
+**Video:** [video link]
+
+**Description:**
+PoolTogether proved people love no-loss prize savings — but a transparent chain leaks every deposit, every saver's odds, and exactly who won each draw, making winners targets. Samar Saving recreates the mechanic on Zama fhEVM with confidentiality end to end.
+
+Users deposit confidential cUSDC (ERC-7984) and receive transferable encrypted prize tickets 1:1 — the pool contract is itself an ERC-7984. Draw weight is an encrypted TWAB (time-weighted average balance), so odds are exactly deposit-time-weighted and depositing right before a draw earns ~nothing. Every 10 minutes a 3-phase draw runs: (1) snapshot — the pool publishes ONE aggregate, its total weight, the only value a draw ever discloses; (2) seed — anyone relays the KMS public decryption, verified on-chain via FHE.checkSignatures, and per-tier thresholds are drawn with FHE.randEuint128 — encrypted on-chain randomness; (3) paginated selection over encrypted cumulative sums. Prizes (3 tiers, 70/20/10) are credited via FHE.select to EVERY saver — winners get the prize, everyone else +0 — so the winner's identity never exists in plaintext anywhere. Claims are winner-blind the same way. Principal is withdrawable in full at any time; the contract has no owner, no pause, no upgrade path. Yield comes from a documented mock source (10% APR, permissionless harvest) with a drop-in path for a real strategy adapter. Draws are cranked by a GitHub Actions keeper, are Chainlink Automation-compatible, and every phase is permissionless from the app UI. EIP-712 user decryption powers the in-app balance/odds/winnings reveals. Full confidentiality & leakage documentation in packages/pool/README.md.
+
+**Stack:** Solidity + `@fhevm/solidity` (euint64/euint128, FHE.randEuint128, FHE.checkSignatures), OpenZeppelin ERC-7984, Next.js + wagmi + Zama Relayer SDK (EIP-712 user decryption + public-decryption relay).

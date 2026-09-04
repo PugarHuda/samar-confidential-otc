@@ -1,14 +1,21 @@
-# Submissions — Zama Developer Program, Mainnet Season 3
+# Submissions — Zama Developer Program (Seasons 3 & 4)
 
-Three confidential-finance apps on Zama fhEVM, one monorepo, all deployed and **verified live on Sepolia**.
+Four confidential-finance apps on Zama fhEVM, one monorepo, all deployed and **verified live on Sepolia**.
 
 Suite hub: https://samar-hub.vercel.app · Repo: https://github.com/PugarHuda/samar-confidential-otc
 
 | # | App | Track | Live demo | Code | Video script | X thread |
 |---|---|---|---|---|---|---|
-| 1 | **Samar** — confidential OTC desk | Builder ($7k) | https://samar-otc.vercel.app | `packages/web` | `submission/video-script.md` | `submission/x-thread.md` |
-| 2 | **Confidential Wrapper Registry** | Bounty ($3k) | https://samar-wrapper.vercel.app | `packages/wrapper` | `submission/wrapper-video-script.md` | `submission/wrapper-x-thread.md` |
-| 3 | **Confidential Airdrop** | Special Bounty ($2.5k, TokenOps) | https://samar-airdrop.vercel.app | `packages/airdrop` | `submission/airdrop-video-script.md` | `submission/airdrop-x-thread.md` |
+| 1 | **Samar Saving** — confidential PoolTogether | **S4 Bounty ($5k)** | https://samar-pool.vercel.app | `packages/pool` | `submission/pool-video-script.md` | `submission/pool-x-thread.md` |
+| 2 | **Samar** — confidential OTC desk | S3 Builder ($7k) | https://samar-otc.vercel.app | `packages/web` | `submission/video-script.md` | `submission/x-thread.md` |
+| 3 | **Confidential Wrapper Registry** | S3 Bounty ($3k) | https://samar-wrapper.vercel.app | `packages/wrapper` | `submission/wrapper-video-script.md` | `submission/wrapper-x-thread.md` |
+| 4 | **Confidential Airdrop** | S3 Special Bounty ($2.5k, TokenOps) | https://samar-airdrop.vercel.app | `packages/airdrop` | `submission/airdrop-video-script.md` | `submission/airdrop-x-thread.md` |
+
+## Season 4 — Samar Saving (Confidential PoolTogether)
+No-loss prize savings where **nobody — not even the pool — learns who won**: encrypted deposits/balances (ERC-7984 tickets), encrypted TWAB draw weights (no draw sniping), on-chain FHE randomness bounded by a KMS-signature-verified aggregate, winner-blind selection & claims, full principal withdrawable anytime, no admin keys. Full design + leakage doc: `packages/pool/README.md`.
+- Contracts (verified): pool `0xe7bFfFF46fAc9FBA8e2cF4265C65c16BAD47EA69` · yield `0x3a604f4eBB6F6057bB3200d1ac010fA3224bdbf5` · cUSDC `0x6BC0f17C25505795E441D9bCd1A5E0331eB5097e`
+- Live e2e (full judged cycle on real coprocessor): `packages/contracts/scripts/e2e-pool.ts`
+- Automated draws: `.github/workflows/pool-keeper.yml` (needs `KEEPER_PRIVATE_KEY` repo secret) + Chainlink Automation-compatible + permissionless in-app crank
 
 ## One-line pitches
 1. **Samar** — an on-chain OTC desk / dark pool where order size, price, and the maker's hidden reserve stay encrypted end to end; trustless atomic settlement (Direct) plus sealed-bid Vickrey auctions (RFQ). Permissioned trades (`allowedTaker`) put compliance in the contract.
