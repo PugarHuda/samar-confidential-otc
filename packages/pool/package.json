@@ -1,0 +1,38 @@
+{
+  "name": "samar-pool",
+  "version": "0.1.0",
+  "private": true,
+  "license": "BSD-3-Clause-Clear",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "2.2.11",
+    "@tanstack/react-query": "^5.59.0",
+    "@zama-fhe/relayer-sdk": "^0.4.1",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "2.54.2",
+    "wagmi": "2.19.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "@wagmi/connectors": "6.2.0",
+    "@wagmi/core": "2.22.1",
+    "@coinbase/cdp-sdk": "1.51.2"
+  }
+}
