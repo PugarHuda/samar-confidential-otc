@@ -20,17 +20,25 @@ jobs:
     defaults:
       run:
         working-directory: packages/contracts
-    env:
-      PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
-      POOL_ADDRESS: "0xe7bFfFF46fAc9FBA8e2cF4265C65c16BAD47EA69"
-      YIELD_ADDRESS: "0x3a604f4eBB6F6057bB3200d1ac010fA3224bdbf5"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: crank (skips cleanly if KEEPER_PRIVATE_KEY secret is unset)
+      - name: gate (skip cleanly if KEEPER_PRIVATE_KEY secret is unset)
+        id: gate
+        env:
+          PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
         run: |
-          if [ -z "$PRIVATE_KEY" ]; then echo "KEEPER_PRIVATE_KEY not set — skipping"; exit 0; fi
-          npm ci
-          npx hardhat run scripts/keeper-pool.ts --network sepolia
+          if [ -z "$PRIVATE_KEY" ]; then echo "run=false" >> "$GITHUB_OUTPUT"; echo "KEEPER_PRIVATE_KEY not set — skipping"; else echo "run=true" >> "$GITHUB_OUTPUT"; fi
+      # npm ci runs third-party install scripts — keep the secret out of its env
+      - name: install
+        if: steps.gate.outputs.run == 'true'
+        run: npm ci
+      - name: crank
+        if: steps.gate.outputs.run == 'true'
+        env:
+          PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+          POOL_ADDRESS: "0xe7bFfFF46fAc9FBA8e2cF4265C65c16BAD47EA69"
+          YIELD_ADDRESS: "0x3a604f4eBB6F6057bB3200d1ac010fA3224bdbf5"
+        run: npx hardhat run scripts/keeper-pool.ts --network sepolia
