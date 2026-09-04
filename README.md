@@ -12,6 +12,7 @@ Built for the **Zama Developer Program — Builder Track (Mainnet Season 3)**. D
 
 | App | What it is | Track | Live |
 |---|---|---|---|
+| **Samar Saving** — `packages/pool` | Confidential PoolTogether: no-loss prize savings, winner-blind FHE draws — [README](packages/pool/README.md) | S4 Bounty ($5k) | https://samar-pool.vercel.app |
 | **Samar** — `packages/web` | Confidential OTC desk (Direct + RFQ Vickrey) — documented below | Builder ($7k) | https://samar-otc.vercel.app |
 | **Wrapper Registry** — `packages/wrapper` | Every ERC-20 ↔ ERC-7984 wrapper on Sepolia — wrap/unwrap/decrypt/faucet | Bounty ($3k) | https://samar-wrapper.vercel.app |
 | **Confidential Airdrop** — `packages/airdrop` | Encrypted token distribution on the TokenOps SDK — flow verified live | Special Bounty ($2.5k) | https://samar-airdrop.vercel.app |

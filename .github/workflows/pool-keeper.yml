@@ -1,0 +1,33 @@
+# Automated draw keeper for the Confidential PrizePool (samar-pool).
+# Every 15 min: harvest due mock yield, then advance whatever draw phase is pending
+# (start → relay KMS seed → selection pages). The crank is permissionless on-chain;
+# this bot only pays gas. Requires repo secret KEEPER_PRIVATE_KEY (a funded Sepolia key).
+name: pool-keeper
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: pool-keeper
+  cancel-in-progress: false
+
+jobs:
+  crank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: packages/contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx hardhat run scripts/keeper-pool.ts --network sepolia
+        env:
+          PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+          POOL_ADDRESS: "0xe7bFfFF46fAc9FBA8e2cF4265C65c16BAD47EA69"
+          YIELD_ADDRESS: "0x3a604f4eBB6F6057bB3200d1ac010fA3224bdbf5"

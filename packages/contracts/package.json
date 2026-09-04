@@ -7,7 +7,10 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
-    "clean": "hardhat clean"
+    "clean": "hardhat clean",
+    "deploy:pool": "hardhat run scripts/deploy-pool.ts --network sepolia",
+    "e2e:pool": "hardhat run scripts/e2e-pool.ts --network sepolia",
+    "keeper:pool": "hardhat run scripts/keeper-pool.ts --network sepolia"
   },
   "devDependencies": {
     "@fhevm/hardhat-plugin": "^0.4.2",
